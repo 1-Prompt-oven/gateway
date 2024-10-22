@@ -49,37 +49,6 @@ public class JwtProvider {
 		this.publicKey = jwtSecret.getPublicKey();
 	}
 
-	public String issueRefresh(int requestedExpiration, String authJWT) {
-
-		Date now = new Date();
-		String userUID = getClaimOfToken(authJWT, "sub");
-
-		//Create JWT claims
-		JWTClaimsSet jwtClaims = new JWTClaimsSet.Builder()
-			.issuer(jwtissuer)
-			.subject(userUID)
-			.audience(jwtaudience)
-			.notBeforeTime(now)
-			.issueTime(now)
-			.expirationTime(new Date(now.getTime() +
-				refreshExpiration * requestedExpiration))
-			//Token is usable for user request days
-			.jwtID(UUID.randomUUID().toString())
-			.build();
-
-		EncryptedJWT jwt = new EncryptedJWT(header, jwtClaims);
-
-		RSAEncrypter encrypter = new RSAEncrypter(publicKey);
-
-		try {
-			jwt.encrypt(encrypter);
-		} catch (JOSEException e) {
-			throw new RuntimeException(e);
-		}
-		//return serialized jwt Token
-		return jwt.serialize();
-	}
-
 	public String issueRefresh(String authJWT) {
 
 		Date now = new Date();
@@ -150,6 +119,7 @@ public class JwtProvider {
 		return jwt.serialize();
 	}
 
+
 	// parse serialized token value to token object
 	private EncryptedJWT parseToken(String serializedJWT) {
 		EncryptedJWT candidateToken = null;
@@ -175,7 +145,7 @@ public class JwtProvider {
 		return token;
 	}
 
-	private boolean validateToken(JWTClaimsSet claims) {
+	private boolean validateTokenInfo(JWTClaimsSet claims) {
 		boolean vaildation = false;
 
 		String issuer = claims.getIssuer();
@@ -188,12 +158,22 @@ public class JwtProvider {
 		return vaildation;
 	}
 
+	public boolean validateToken(String token) {
+		try {
+			EncryptedJWT targetToken = decryptToken(parseToken(token));
+			JWTClaimsSet claimsSet = targetToken.getJWTClaimsSet();
+			return validateTokenInfo(claimsSet);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	//get values of token
 	public String getClaimOfToken(String recievedToken, String typeOfClaim) {
 		try {
 			EncryptedJWT targetToken = decryptToken(parseToken(recievedToken));
 			JWTClaimsSet claimsSet = targetToken.getJWTClaimsSet();
-			if (validateToken(claimsSet)) {
+			if (validateTokenInfo(claimsSet)) {
 				System.out.println(claimsSet);
 				return claimsSet.getClaim(typeOfClaim).toString();
 			} else {
@@ -208,7 +188,7 @@ public class JwtProvider {
 		try {
 			EncryptedJWT targetToken = decryptToken(parseToken(recievedToken));
 			JWTClaimsSet claimsSet = targetToken.getJWTClaimsSet();
-			if (validateToken(claimsSet)) {
+			if (validateTokenInfo(claimsSet)) {
 				return claimsSet.getExpirationTime();
 			} else {
 				throw new RuntimeException("token expired");
