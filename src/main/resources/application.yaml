@@ -32,14 +32,14 @@ spring:
               - POST
               - DELETE
       routes:
-#        - id: auth-service
-#          uri: lb://AUTH-SERVICE
-#          predicates:
-#            - Path=/v1/auth/**
-#          filters:
-#            - StripPrefix=1
-  #        JWT 이 필요한 경우
-#        - id: feed-service
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - StripPrefix=1
+        # JWT 이 필요한 경우
+        #- id: feed-service
 #          uri: lb://FEED-SERVICE
 #          predicates:
 #            - Path=/auth/**
@@ -62,16 +62,16 @@ eureka:
       instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 springdoc:
-  show-actuator: true
-  show-extensions: true
+  swagger-ui:
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /v1/auth/swagger-ui/index.html
+        name: Auth Service
   api-docs:
     path: /v3/api-docs
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-    urls:
-      - name: auth-service
-        url: /auth/v3/api-docs
+  cache:
+    disabled: true
 
 jwt:
   rsa:
