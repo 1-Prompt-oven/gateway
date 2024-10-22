@@ -1,0 +1,85 @@
+server:
+  port: 8000
+  forward-headers-strategy: framework
+  shutdown: graceful
+
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      default-filters: # 기본 필터 설정
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+      global-cors: # 글로벌 CORS 설정
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+            allowCredentials: true
+            allowedHeaders:
+              - x-requested-with
+              - Authorization
+              - Refreshtoken
+              - content-type
+              - credential
+              - X-AUTH-TOKEN
+              - X-CSRF-TOKEN
+            allowedMethods:
+              - PUT
+              - GET
+              - POST
+              - DELETE
+      routes:
+#        - id: auth-service
+#          uri: lb://AUTH-SERVICE
+#          predicates:
+#            - Path=/v1/auth/**
+#          filters:
+#            - StripPrefix=1
+  #        JWT 이 필요한 경우
+#        - id: feed-service
+#          uri: lb://FEED-SERVICE
+#          predicates:
+#            - Path=/auth/**
+#          filters:
+#            - StripPrefix=1
+#            - JwtAuthenticationFilter
+
+
+eureka:
+    client:
+      serviceUrl:
+        defaultZone: http://localhost:8761/eureka/
+      register-with-eureka: true
+      fetch-registry: true
+    instance:
+      prefer-ip-address: true
+      instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+springdoc:
+  show-actuator: true
+  show-extensions: true
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    urls:
+      - name: auth-service
+        url: /auth/v3/api-docs
+
+jwt:
+  rsa:
+    private: MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDIMHTIaGrkc/R3zGtaTfBKBgINW/Vk/YVMIVU3gqT5bBPueg9C1YIzpx4/bE2w1ZG6zliFuDq3lbctLVbrmwdEvtAgdemmypRIzNgddz0XnMjFIT6EU7KUC6+f6e0yVufIuK139l/n43MI+XBVqQzHfol8xk9Pjv97cvRmcW6fZpk53ezNYP43iOKW0zv3+xBsqwQGFlvZHDfYU+8Zgkw/9LJ6yq9Fib83o+G7+jsTEg3Oj/Ykl7ByCHZRCJmeKRk6AMX3ujk8jg7jWtt29isNDzA3wfuk3mSW8vrpWh6TUrRtafLZwZGtoQYhz2F/6h5o7oRbXNpMorqP8X1HoBkNAgMBAAECggEAE/Son5WxGibo9sw841qjmm1w5O4Gz1NqZ0VnXko6sdZxQjOOs+XevdFp9X6RXBBeH5YUQvgzejuFcA51/LSOi+7Nhn7alNLa50rsPDu3rlPlu6jtt3k0cwebMUC7cWoyXtLyD+RSeSY2QG3FIfThHj3h7LtECrVBiIfUDyY9lcwSQiBgQRJBhEi4lnNFOB5Z4fNgz5JH6PBA/hUOCaYOKRMzsWp2oqzMUR7ikz1lqbZjBRzcFAZORgH3JnPo22dmaxrBqJlADME39RU/hzNUlnHqFwIRpnoB61V3+Y7AhVZKtoLn7Ec3G3EtsqedLlt6pG9Vx7VvFaut2mw9qHS8oQKBgQDVhMfZPAaBPhEq9EMW3gwNZtfeOVAOi8TwQ3D3POGVOkff4+clz38b5QJKu3SabVhZVW4tDMYcc14T5r2nXfualCXEBzXV9tuzD75F+WK5ccKnLmsifVNtjYwZS1+2ZyAH/uCVpuWWRyp/fWjJLSL2gZwOqVvDlslmpT/kgdp4yQKBgQDwBMPZmDrrsSknswbP5XsZvRYB/HXBrMpy8mvCvNg1ljeCgkVhrqXaTa+XT4V5fyAllSeJ0A39oIg/Xehh1tYoJTO7tHL2xFWUC9XFZaOYuQVueLzmsPr7N1n6JXQnWyZT/1ey4/ke/ogJVTvFgWwWoEeEvaxWlDKchhm1vh2EJQKBgEYUTJuqLeBhhLT6csKgoogLhzJy0SnVChBpsjwTiV63QDvly0oHropzQatRl1XQKb04Yu76UFOqMeiKRRkXqar0kOikDTFq0nUU57iDv7lp8x94BsXNKIK+gIsUyBdQBZ1aNFAp9RS7yuEJQkk1PVJ2+8d8Ipgxd2zvM+dGD3SxAoGAEEdydSazEFtSvEOTObSJ1eQSQw45empazNMOZgXi8DeBClQFmqt6ykSsnSmiluv9ZS8poFpBKKujshCPe1tT6SMk0B1cEsqcN09aL2pGX0xlRunffhIQ48sMSkASEb1H6ziNXS/DLMv8tA1Y4Xt2tk4mq6UltDWW/TDHO6FqZRUCgYBAk47+K1eSwNAF/RZPrGPcWFIwtxMlvV7u0w581hpmL9D3tRJ737ibN9/T5qTiU7IyrIHHJnS7VRFq6P2P6FciF/QpeZPj1FxIGaLjzBNiDJQ/KGZsrel9ijay/jJc2Zy/LgsisNLx8owbDvSun/PzyTtdW1obqUthZKTv6YE4lw==
+    public: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyDB0yGhq5HP0d8xrWk3wSgYCDVv1ZP2FTCFVN4Kk+WwT7noPQtWCM6ceP2xNsNWRus5Yhbg6t5W3LS1W65sHRL7QIHXppsqUSMzYHXc9F5zIxSE+hFOylAuvn+ntMlbnyLitd/Zf5+NzCPlwVakMx36JfMZPT47/e3L0ZnFun2aZOd3szWD+N4jiltM79/sQbKsEBhZb2Rw32FPvGYJMP/SyesqvRYm/N6Phu/o7ExINzo/2JJewcgh2UQiZnikZOgDF97o5PI4O41rbdvYrDQ8wN8H7pN5klvL66Voek1K0bWny2cGRraEGIc9hf+oeaO6EW1zaTKK6j/F9R6AZDQIDAQAB
+  expiration:
+    refresh: 86400000 # 24 hours
+    access: 600000 # 10 minutes
+
+logging:
+  level:
+    org.springframework.jdbc: DEBUG
+    org.springframework.transaction: DEBUG
+    org.springframework.orm.jpa: DEBUG
