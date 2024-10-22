@@ -46,7 +46,10 @@ spring:
 #          filters:
 #            - StripPrefix=1
 #            - JwtAuthenticationFilter
-
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 eureka:
     client:
