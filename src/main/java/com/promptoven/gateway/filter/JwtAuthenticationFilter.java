@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 );
             }
             String token = Objects.requireNonNull(request.getHeaders().get("Authorization"))
-                .getFirst().replace("Bearer ", "");
+                .getFirst();
             if(redisTokenRepostirory.isTokenBlocked(token)) {
                 return handleException(
                         exchange, BaseResponseStatus.TOKEN_NOT_VALID.getCode(),
