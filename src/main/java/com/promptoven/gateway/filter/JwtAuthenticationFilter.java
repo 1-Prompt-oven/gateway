@@ -3,6 +3,7 @@ package com.promptoven.gateway.filter;
 import java.util.Objects;
 
 import com.promptoven.gateway.auth.JwtProvider;
+import com.promptoven.gateway.repo.RedisTokenRepostirory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.promptoven.gateway.common.exception.BaseResponseStatus;
@@ -26,10 +27,12 @@ import reactor.core.publisher.Mono;
 public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAuthenticationFilter.Config> {
 
     private final JwtProvider jwtProvider;
+    private final RedisTokenRepostirory redisTokenRepostirory;
 
-    public JwtAuthenticationFilter(JwtProvider jwtProvider) {
+    public JwtAuthenticationFilter(JwtProvider jwtProvider, RedisTokenRepostirory redisTokenRepostirory) {
         super(Config.class);
         this.jwtProvider = jwtProvider;
+        this.redisTokenRepostirory = redisTokenRepostirory;
     }
 
     public static class Config {
@@ -48,6 +51,12 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             }
             String token = Objects.requireNonNull(request.getHeaders().get("Authorization"))
                 .getFirst().replace("Bearer ", "");
+            if(redisTokenRepostirory.isTokenBlocked(token)) {
+                return handleException(
+                        exchange, BaseResponseStatus.TOKEN_NOT_VALID.getCode(),
+                        BaseResponseStatus.TOKEN_NOT_VALID.getMessage()
+                );
+            }
             if(!jwtProvider.validateToken(token)) {
                 return handleException(
                         exchange, BaseResponseStatus.TOKEN_NOT_VALID.getCode(),
