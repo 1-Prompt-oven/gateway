@@ -79,6 +79,7 @@ springdoc:
         name: Auth Service
       - url: "/product-service/v3/api-docs"
         name: Product Service
+    use-root-path: true
   api-docs:
     enabled: true
     path: /v3/api-docs
