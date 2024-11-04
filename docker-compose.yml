@@ -1,0 +1,21 @@
+# gateway/docker-compose.yml
+version: '3.8'
+services:
+  gateway-server:
+    image: astar5327/gateway:latest
+    container_name: gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - msa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  msa-network:
+    external: true

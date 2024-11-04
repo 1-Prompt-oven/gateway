@@ -98,3 +98,21 @@ logging:
     org.springframework.jdbc: DEBUG
     org.springframework.transaction: DEBUG
     org.springframework.orm.jpa: DEBUG
+
+
+---
+# application-prod.yml
+spring:
+  data:
+    redis:
+      host: prod-redis-host
+      port: 6379
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://prod-eureka:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
