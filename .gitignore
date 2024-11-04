@@ -26,6 +26,10 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+## mongodb
+*/data/**
+*/data/primary/**
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -35,7 +39,8 @@ out/
 
 ### VS Code ###
 .vscode/
-gradle/wrapper/gradle-wrapper.jar
-gradle/wrapper/gradle-wrapper.properties
-gradlew
-gradlew.bat
+*.yml
+!gradle.yml
+.env
+.DS_Store
+*.idea
