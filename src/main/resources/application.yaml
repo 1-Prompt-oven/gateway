@@ -72,7 +72,7 @@ eureka:
 springdoc:
   swagger-ui:
     enabled: true
-    path: swagger-ui.html
+    path: /swagger-ui/index.html
     config-url: /v3/api-docs
     urls:
       - url: "/auth-service/v3/api-docs"
