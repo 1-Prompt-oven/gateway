@@ -111,7 +111,7 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://prod-eureka:8761/eureka/
+      defaultZone: http://discovery:8761/
     register-with-eureka: true
     fetch-registry: true
   instance:
