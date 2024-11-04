@@ -37,7 +37,7 @@ jobs:
           script: |
             sudo docker rm -f $(sudo docker ps -aq) || true
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gateway
-            cd ~/gateway    # gateway 디렉토리로 이동
+            cd /home/ubuntu/gateway   # gateway 디렉토리로 이동
             echo "SPRING_PROFILES_ACTIVE=prod" > .env
-            docker-compose up -d
+            sudo docker-compose up -d
             sudo docker image prune -f
