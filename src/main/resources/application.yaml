@@ -38,6 +38,14 @@ spring:
             - Path=/auth-service/**
           filters:
             - StripPrefix=1
+
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/product-service/**
+          filters:
+            - StripPrefix=1
+
         # JWT 이 필요한 경우
         #- id: feed-service
 #          uri: lb://FEED-SERVICE
@@ -58,17 +66,21 @@ eureka:
       register-with-eureka: true
       fetch-registry: true
     instance:
-      prefer-ip-address: true
+      prefer-ip-address: false
       instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html
-    config-url: /v3/api-docs/swagger-config
+    enabled: true
+    path: swagger-ui.html
+    config-url: /v3/api-docs
     urls:
-      - url: /v1/auth/swagger-ui/index.html
+      - url: "/auth-service/v3/api-docs"
         name: Auth Service
+      - url: "/product-service/v3/api-docs"
+        name: Product Service
   api-docs:
+    enabled: true
     path: /v3/api-docs
   cache:
     disabled: true
