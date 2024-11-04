@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+    depends_on:
+      - discovery
     networks:
       - msa-network
     healthcheck:
