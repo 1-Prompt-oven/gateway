@@ -51,6 +51,12 @@ spring:
             - Path=/settlement-service/**
           filters:
             - StripPrefix=1
+        - id: cart-service
+          uri: lb://CART-SERVICE
+          predicates:
+            - Path=/cart-service/**
+          filters:
+            - StripPrefix=1
 
         # JWT 이 필요한 경우
         #- id: feed-service
@@ -87,6 +93,8 @@ springdoc:
         name: Product Service
       - url: "/settlement-service/v3/api-docs"
         name: Settlement Service
+      - url: "/cart-service/v3/api-docs"
+        name: Cart Service
     use-root-path: true
   api-docs:
     enabled: true
