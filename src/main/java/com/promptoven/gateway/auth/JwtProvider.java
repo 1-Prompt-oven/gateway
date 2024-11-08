@@ -1,11 +1,9 @@
 package com.promptoven.gateway.auth;
 
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +14,6 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.crypto.RSADecrypter;
-import com.nimbusds.jose.crypto.RSAEncrypter;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 
@@ -41,12 +38,11 @@ public class JwtProvider {
 	@Autowired
 	private JwtSecret jwtSecret;
 	private RSAPrivateKey privateKey;
-	private RSAPublicKey publicKey;
+
 
 	@PostConstruct
 	public void init() {
 		this.privateKey = jwtSecret.getPrivateKey();
-		this.publicKey = jwtSecret.getPublicKey();
 	}
 
 	// parse serialized token value to token object
