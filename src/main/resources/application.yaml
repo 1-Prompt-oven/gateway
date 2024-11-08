@@ -36,7 +36,7 @@ spring:
         - id: auth-service
           uri: lb://AUTH-SERVICE
           predicates:
-            - Path=/auth-service/**
+            - Path=/auth-service/**j
           filters:
             - StripPrefix=1
 
@@ -121,10 +121,19 @@ logging:
 ---
 # application-prod.yml
 spring:
+  config:
+    activate:
+      on-profile: prod
+    import:
+      - "optional:configserver:http://config-server:8888"
   data:
     redis:
       host: garnet
       port: 6379
+  cloud:
+    config:
+      name: gateway
+      fail-fast: false
 
 eureka:
   client:
