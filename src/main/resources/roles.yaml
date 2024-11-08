@@ -1,0 +1,4 @@
+authority:
+  admin: admin
+  seller: seller
+  member: member,seller,admin
