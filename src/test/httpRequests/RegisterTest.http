@@ -1,0 +1,37 @@
+### GET request to example server
+POST http://localhost:8000/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "test32@test23",
+  "password": "test123",
+  "nickname": "test123"
+}
+
+###
+POST http://localhost:8000/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test32@test23",
+  "password": "test123"
+}
+
+###
+PUT http://localhost:8000/v1/member/settlement/profile
+Content-Type: application/json
+Authorization: "eyJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAtNTEyIn0.jZhtW4WeUIsSoVELF2HRMG0JDTS1540tdAhIMD-OwrXPPZxtJ3Khue3WoIIoeYOA2l6W034-L8uen-U_Yk0pH42oeVo9ZO1a-1Vhhg05jHtC75-cQpyKwkTbdgquiYwpqvjzZKgO5sfbuL-JvqDS8xHv2dG2jj0EE3qC_ZlunPcEGcl_qnFJR6EPCgUmMQ_MIS_E2Vey5RtHqyS252IKt5yGWRnAZdCLXc4kUoh-UObCT_XXyxAYSh7QVH0wgLxzwKGmR1hXWTfr3Bor3bcC1oCqo8FsqS_Ts1nYLZauD2kARYzoSQoN9efvkePDKwomin8MbwEar-JOIgF9LbG3Dg.MUhAf6PEzVE7y_T9.U4tg2-sN0kYzrGqahv_z0MsxO2lt9NA86XuaCh4Zso2CSZhTjTcHvSVEsH5dPuySjvfVzkn_B8htt0utolAUXFawx85e45FIG0iIU0OgTIhRVBrXGk_cdP9-ErM4pMB6KbEO33O7P6r9Ct38RjthPUf76NNyR4GEwYWVOb6oSRflK8bfM6oa3sFMvKVOTkSIoxodwF9x966iTdcXBCuzthzeY3JyEyf1Y8E9QhFOHe80c6xGzugc01LwVuiXjska0-JZn-xdGvCwceocysV5spUqKQFKV7a7W3ODf0f9N_F8VqGR9Ib2hA.WI0V2f4XpNDf1Orv2pXa-g"
+
+{
+  "memberID": "249aad94-5754-40e9-bd60-36d9f31a35e3",
+  "taxID": "strinssdafg",
+  "accountID": "string",
+  "bankName": "string",
+  "phone": "string",
+  "postcode": "string",
+  "address": "string"
+}
+
+###
+GET http://localhost:8000/v1/seller/settlement/profile/741bfc91-3707-4afb-97ef-22d4f1d1b751
+Authorization: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAtNTEyIn0.nsPmA_5ep0IFG2aRRjhHXbom9BwRK_0CJW7nJX2ifGkfZXzaVm1Z7z7y13saL2FfHn9CDszqUYFFBowqnnTjgWlmbN895TDktvWtbRTY9tBDcopV5ppB3PSE3uXCAKAcwvRADPVdTDH73QUFMPxGr-o2vtksTaUBYvVx5vzkKXi49TMjF3ZI47fms68nQ1CpRKteJYQir-RrukkTzgH0X1w82Ul3U0S0X7peJZ9JFP6EZc3kIMH05DQbTxZvI_41PfjJyI25D4kCzPIWSx-dxYUnIcxjsshZVoTuozcf33cW09r3Tra_noO2RQ9w95xoFTY9_WyBAidRANWk4HJY6Q.u8-h4iYb-_XKCb6e.r-Qoj4VBBklbOZNo0nBvgXk9PA3gZJXsFrRGCX-lWHtFwe1NZBPKIxx3ajHbxgpyn0pPZmG0ZkhO0gs-qe0V0rXTJnH5QhWQXnAASDcl40HyWiNOfy269KVqekROLub7IGDR-D8oTChMaTogR6vEv_-ylvBCgm9tS2DzS17ktUDmNRfgUOm48EwSvqBD3k3AubVBThlnF1O95U8eFi8XQGr2KRBXGeyoFbCP92Ape8MxsK0k8dh1IAKd3zhnwQrVQ4ZVlHAy9NHmE6wsotHkduB8ZF9PkRbi3JVDsTzOzjQNuD21juXyTg.s9XBGSnlYRWa1q9Y1rCfgA"
