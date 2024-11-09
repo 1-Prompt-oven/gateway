@@ -11,6 +11,7 @@ spring:
   config:
     import:
       - classpath:roles.yaml
+      - classpath:services.yaml
   data:
     redis:
       host: localhost
@@ -19,13 +20,11 @@ spring:
     gateway:
       default-filters: # 기본 필터 설정
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
-        - JwtAuthorizationFilter
       global-cors: # 글로벌 CORS 설정
         cors-configurations:
           '[/**]':
             allowedOrigins:
               - "*"
-            allowCredentials: off
             allowedHeaders:
               - x-requested-with
               - Authorization
@@ -39,10 +38,7 @@ spring:
               - GET
               - POST
               - DELETE
-
-# Define just service names
-services:
-  names: AUTH-SERVICE,PRODUCT-SERVICE,SETTLEMENT-SERVICE,CART-SERVICE
+              - OPTIONS #this is for swagger ui
 
 eureka:
   client:
@@ -54,21 +50,17 @@ eureka:
     prefer-ip-address: false
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+# Only keep these basic swagger settings
 springdoc:
   swagger-ui:
     enabled: true
-    path: /swagger-ui/index.html
+    disable-swagger-default-url: true
+    path: /swagger-ui.html
     config-url: /v3/api-docs/swagger-config
-    urls:
-      - url: "/auth-service/v3/api-docs"
-        name: Auth Service
-      - url: "/product-service/v3/api-docs"
-        name: Product Service
-      - url: "/settlement-service/v3/api-docs"
-        name: Settlement Service
-      - url: "/cart-service/v3/api-docs"
-        name: Cart Service
-    use-root-path: true
+    try-it-out-enabled: true
+    persist-authorization: true
+    syntax-highlight:
+      activated: true
   api-docs:
     enabled: true
     path: /v3/api-docs
@@ -87,6 +79,7 @@ logging:
   level:
     org.springframework: INFO
     org.springframework.cloud.gateway: DEBUG
+    org.springdoc: DEBUG
 
 
 ---
@@ -103,7 +96,7 @@ spring:
       port: 6379
   cloud:
     config:
-      name: gateway,roles
+      name: gateway,roles,services
       fail-fast: false
 
 eureka:
