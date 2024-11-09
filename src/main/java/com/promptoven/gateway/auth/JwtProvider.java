@@ -1,7 +1,6 @@
 package com.promptoven.gateway.auth;
 
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
@@ -41,13 +40,27 @@ public class JwtProvider {
 
 	private EncryptedJWT parseAndDecrypt(String token) {
 		try {
+			log.debug("Attempting to parse JWT token");
 			EncryptedJWT jwt = EncryptedJWT.parse(token);
+			
+			log.debug("Token parsed successfully, attempting decryption");
+			if (decrypter == null) {
+				log.error("Decrypter is null - JWT provider may not be properly initialized");
+				throw new RuntimeException("JWT provider not properly initialized");
+			}
+			
 			jwt.decrypt(decrypter);
+			log.debug("Token decrypted successfully");
 			return jwt;
 		} catch (ParseException e) {
 			log.error("Failed to parse JWT token", e);
 			throw new RuntimeException("Invalid JWT format", e);
 		} catch (JOSEException e) {
+			if (e.getCause() instanceof javax.crypto.AEADBadTagException) {
+				log.error("JWT decryption failed - token may be corrupted or encrypted with different key. Token: {}", 
+						 token.substring(0, Math.min(token.length(), 10)) + "...", e);
+				throw new RuntimeException("Invalid token encryption", e);
+			}
 			log.error("Failed to decrypt JWT token", e);
 			throw new RuntimeException("Failed to decrypt JWT", e);
 		}
