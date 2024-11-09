@@ -1,4 +1,4 @@
-package com.promptoven.gateway.repo;
+package com.promptoven.gateway.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
