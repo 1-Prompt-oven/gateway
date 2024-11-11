@@ -56,31 +56,9 @@ public class ServiceRouter {
 	}
 
 	private RouteLocatorBuilder.Builder addSwaggerRoutes(RouteLocatorBuilder.Builder routes) {
-		// Add route for swagger-ui resources
-		routes = routes.route("swagger-ui",
-			r -> r.path("/swagger-ui/**", "/swagger-ui.html")
-				.filters(f -> f
-					.addResponseHeader("Access-Control-Allow-Origin", "*")
-					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-					.addResponseHeader("Access-Control-Allow-Headers",
-						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri("http://localhost:" + serverPort)
-		);
-
-		// Add route for swagger-config
+		// Add route for swagger-config only
 		routes = routes.route("swagger-config",
 			r -> r.path("/v3/api-docs/swagger-config")
-				.filters(f -> f
-					.addResponseHeader("Access-Control-Allow-Origin", "*")
-					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-					.addResponseHeader("Access-Control-Allow-Headers",
-						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri("http://localhost:" + serverPort)
-		);
-
-		// Add route for webjars resources
-		routes = routes.route("webjars",
-			r -> r.path("/webjars/**")
 				.filters(f -> f
 					.addResponseHeader("Access-Control-Allow-Origin", "*")
 					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -109,20 +87,6 @@ public class ServiceRouter {
 							}
 							return Mono.empty();
 						})
-						.addResponseHeader("Access-Control-Allow-Origin", "*")
-						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-						.addResponseHeader("Access-Control-Allow-Headers",
-							"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-					.uri("lb://" + serviceName)
-			);
-
-			// Add route for service-specific swagger-config
-			routes = routes.route(serviceId + "-swagger-config",
-				r -> r.path("/" + serviceId + "/v3/api-docs/swagger-config")
-					.filters(f -> f
-						.rewritePath("/" + serviceId + "/v3/api-docs/swagger-config", 
-								   "/v3/api-docs/swagger-config")
-						.preserveHostHeader()
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",
