@@ -19,13 +19,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       
-      # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-      # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10'
-          GITHUB_DEPENDENCY_GRAPH_ENABLED: true
+          dependency-graph: true
       
       ## gradle caching - 빌드 시간 향상
       - name: Gradle Caching
@@ -69,11 +67,3 @@ jobs:
             echo "SPRING_PROFILES_ACTIVE=prod" > .env
             sudo docker-compose up -d
             sudo docker image prune -f
-      
-      - name: Submit dependency graph
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: build/reports/dependency-check-report.sarif
-          checkout_path: /home/runner/work/gateway/gateway
-          wait-for-processing: true
-    
