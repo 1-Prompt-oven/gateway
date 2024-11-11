@@ -66,6 +66,8 @@ springdoc:
     path: /v3/api-docs
   cache:
     disabled: true
+  show-actuator: true
+  enable-native-support: true
 
 jwt:
   rsa:
@@ -80,6 +82,7 @@ logging:
     org.springframework: INFO
     org.springframework.cloud.gateway: DEBUG
     org.springdoc: DEBUG
+    org.springframework.web: DEBUG
 
 gateway:
   host: localhost:8000

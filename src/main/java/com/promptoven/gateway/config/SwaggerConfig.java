@@ -35,6 +35,11 @@ public class SwaggerConfig {
 
 		// Create set of SwaggerUrl objects
 		Set<SwaggerUrl> urls = new HashSet<>();
+		SwaggerUrl gwSwagger = new SwaggerUrl();
+		gwSwagger.setName("gateway");
+		gwSwagger.setUrl("/v3/api-docs");
+		gwSwagger.setDisplayName("Gateway");
+		urls.add(gwSwagger);
 
 		serviceNames.stream()
 			.filter(serviceName -> serviceName != null && !serviceName.trim().isEmpty())
