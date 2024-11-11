@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATA_REDIS_HOST=garnet
+      - SPRING_DATA_REDIS_PORT=6379
     networks:
       - msa-network
     dns:
