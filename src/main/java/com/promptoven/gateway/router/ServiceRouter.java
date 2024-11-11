@@ -58,16 +58,17 @@ public class ServiceRouter {
 
 			// API docs route with CORS
 			routes = routes.route(serviceId + "-api-docs",
-				r -> r.path("/" + serviceId + "/v3/api-docs")
+				r -> r.path("/" + serviceId + "/v3/api-docs/**")
 					.filters(f -> f
-						.rewritePath("/" + serviceId + "/v3/api-docs", "/v3/api-docs")
+						.rewritePath("/" + serviceId + "/v3/api-docs/(?<remaining>.*)", "/v3/api-docs/${remaining}")
 						.modifyResponseBody(String.class, String.class, (exchange, s) -> {
 							if (s != null) {
 								// Replace the server URL in the OpenAPI documentation
-								return Mono.just(s.replaceAll(
+								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
 									"\"servers\":[{\"url\":\"" + gatewayHost + "\""
-								));
+								);
+								return Mono.just(modified);
 							}
 							return Mono.empty();
 						})
@@ -77,8 +78,19 @@ public class ServiceRouter {
 							"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
 					.uri("lb://" + serviceName)
 			);
-		}
 
+			// Add route for swagger-config
+			routes = routes.route(serviceId + "-swagger-config",
+				r -> r.path("/" + serviceId + "/v3/api-docs/swagger-config")
+					.filters(f -> f
+						.rewritePath("/" + serviceId + "/v3/api-docs/swagger-config", "/v3/api-docs/swagger-config")
+						.addResponseHeader("Access-Control-Allow-Origin", "*")
+						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+						.addResponseHeader("Access-Control-Allow-Headers",
+							"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
+					.uri("lb://" + serviceName)
+			);
+		}
 		return routes;
 	}
 
