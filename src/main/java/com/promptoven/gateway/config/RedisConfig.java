@@ -13,11 +13,16 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import io.lettuce.core.ClientOptions;
-import io.lettuce.core.protocol.ProtocolVersion;
 import lombok.extern.slf4j.Slf4j;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @Configuration
 @Slf4j
@@ -39,21 +44,42 @@ public class RedisConfig {
 
 		LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
 			.clientOptions(ClientOptions.builder()
-				.protocolVersion(ProtocolVersion.RESP3)
 				.build())
 			.commandTimeout(Duration.ofSeconds(5))
 			.build();
 
-		return new LettuceConnectionFactory(serverConfig, clientConfig);
+		LettuceConnectionFactory factory = new LettuceConnectionFactory(serverConfig, clientConfig);
+		factory.afterPropertiesSet();
+
+		return factory;
 	}
 
 	@Bean
 	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
 		RedisTemplate<String, Object> template = new RedisTemplate<>();
 		template.setConnectionFactory(connectionFactory);
-		template.setKeySerializer(new StringRedisSerializer());
-		template.setValueSerializer(new StringRedisSerializer());
+		
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+		mapper.activateDefaultTyping(
+			mapper.getPolymorphicTypeValidator(),
+			ObjectMapper.DefaultTyping.NON_FINAL,
+			JsonTypeInfo.As.PROPERTY
+		);
+		
+		Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(
+			mapper,
+			Object.class
+		);
+		
+		StringRedisSerializer stringSerializer = new StringRedisSerializer();
+		
+		template.setKeySerializer(stringSerializer);
+		template.setHashKeySerializer(stringSerializer);
+		template.setValueSerializer(serializer);
+		template.setHashValueSerializer(serializer);
 		template.afterPropertiesSet();
+		
 		return template;
 	}
 
