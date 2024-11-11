@@ -24,6 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 @Configuration
 @Slf4j
 public class RedisConfig {
@@ -36,24 +42,36 @@ public class RedisConfig {
 
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
-		log.info("Initializing Redis connection factory with {}:{}", redisHost, redisPort);
+		log.info("Initializing Redis connection factory...");
+		
+		String resolvedHost = resolveHostAddress();
+		log.info("Resolved Redis host {} to {}", redisHost, resolvedHost);
 		
 		RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration();
-		serverConfig.setHostName(redisHost);
+		serverConfig.setHostName(resolvedHost);
 		serverConfig.setPort(redisPort);
 		
 		LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
 			.clientOptions(ClientOptions.builder()
-				.autoReconnect(true)
 				.socketOptions(SocketOptions.builder()
 					.connectTimeout(Duration.ofSeconds(10))
-					.keepAlive(true)
 					.build())
 				.build())
-			.commandTimeout(Duration.ofSeconds(10))
 			.build();
 
 		return new LettuceConnectionFactory(serverConfig, clientConfig);
+	}
+
+	private String resolveHostAddress() {
+		try {
+			InetAddress address = InetAddress.getByName(redisHost);
+			String resolvedAddress = address.getHostAddress();
+			log.info("Successfully resolved {} to {}", redisHost, resolvedAddress);
+			return resolvedAddress;
+		} catch (UnknownHostException e) {
+			log.error("Failed to resolve host {}, falling back to original hostname", redisHost);
+			return redisHost;
+		}
 	}
 
 	@Bean
@@ -73,31 +91,32 @@ public class RedisConfig {
 	@EventListener(ContextRefreshedEvent.class)
 	public void onApplicationEvent() {
 		log.info("Testing Redis connection after context initialization");
-		try {
-			RedisConnection conn = redisConnectionFactory().getConnection();
-			String pong = new String(conn.ping());
-			log.info("Redis PING response: {}", pong);
-			conn.close();
-		} catch (Exception e) {
-			log.error("Redis connection test failed", e);
-			testRawConnection();
-		}
+		testConnection();
 	}
 
-	private void testRawConnection() {
+	private void testConnection() {
+		log.info("Testing connection with hostname: {}", redisHost);
+		testAddress(redisHost);
+		
+		String resolvedIp = resolveHostAddress();
+		log.info("Testing connection with resolved IP: {}", resolvedIp);
+		testAddress(resolvedIp);
+	}
+
+	private void testAddress(String host) {
 		try (Socket socket = new Socket()) {
-			socket.connect(new InetSocketAddress(redisHost, redisPort), 5000);
-			log.info("Raw socket connection successful");
+			log.info("Attempting to connect to {}:{}", host, redisPort);
+			socket.connect(new InetSocketAddress(host, redisPort), 5000);
+			log.info("Socket connection successful to {}:{}", host, redisPort);
 			
-			OutputStream out = socket.getOutputStream();
-			out.write("*1\r\n$4\r\nPING\r\n".getBytes());
-			out.flush();
+			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			
-			byte[] response = new byte[1024];
-			int bytes = socket.getInputStream().read(response);
-			log.info("Raw Redis response: {}", new String(response, 0, bytes));
+			out.println("PING");
+			String response = in.readLine();
+			log.info("Redis PING response from {}: {}", host, response);
 		} catch (Exception e) {
-			log.error("Raw socket connection failed", e);
+			log.error("Connection test failed for " + host, e);
 		}
 	}
 }
