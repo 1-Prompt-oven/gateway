@@ -70,6 +70,6 @@ jobs:
             sudo docker image prune -f
 
       - name: Submit dependency graph
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
