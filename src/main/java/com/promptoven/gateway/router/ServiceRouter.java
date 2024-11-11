@@ -81,7 +81,7 @@ public class ServiceRouter {
 								log.debug("Modifying API docs response for {}", serviceId);
 								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\" + gatewayHost + "\""
+									"\"servers\":[{\"url\":" + gatewayHost + "\""
 								);
 								return Mono.just(modified);
 							}
