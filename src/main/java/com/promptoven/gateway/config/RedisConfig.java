@@ -1,10 +1,13 @@
 package com.promptoven.gateway.config;
 
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import io.lettuce.core.SocketOptions;
-
+import io.lettuce.core.TimeoutOptions;
 import jakarta.annotation.PostConstruct;
 
 import java.time.Duration;
@@ -43,13 +46,16 @@ public class RedisConfig {
         
         // Configure Lettuce client
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-            .commandTimeout(Duration.ofSeconds(2))  // Reduced timeout
+            .commandTimeout(Duration.ofSeconds(5))
             .clientOptions(ClientOptions.builder()
                 .socketOptions(SocketOptions.builder()
-                    .connectTimeout(Duration.ofSeconds(2))
+                    .connectTimeout(Duration.ofSeconds(5))
+                    .keepAlive(true)
                     .build())
+                .timeoutOptions(TimeoutOptions.enabled(Duration.ofSeconds(5)))
                 .build())
             .build();
+
 
         // Create factory with configurations
         LettuceConnectionFactory factory = new LettuceConnectionFactory(serverConfig, clientConfig);
@@ -85,6 +91,28 @@ public class RedisConfig {
             }
             
             throw new RuntimeException("Could not initialize Redis connection", e);
+        }
+    }
+
+	@PostConstruct
+    public void testConnection() {
+        log.info("Testing Redis connection...");
+        
+        try (Socket socket = new Socket()) {
+            // Test TCP connection first
+            socket.connect(new InetSocketAddress(host, port), 5000);
+            log.info("TCP connection successful");
+            
+            // Try Redis PING using raw socket
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            
+            out.println("PING");
+            String response = in.readLine();
+            log.info("Redis raw response: {}", response);
+            
+        } catch (Exception e) {
+            log.error("Connection test failed", e);
         }
     }
 
