@@ -6,120 +6,115 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWEAlgorithm;
-import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.crypto.RSADecrypter;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JwtProvider {
 
-	// nimbusds's jwt claim default set's data
-	String jwtissuer = "Prompt Oven Service development group";
-	List<String> jwtaudience = List.of("prompt oven service");
-	//Hint of JWT token Encryption type
-	// RSA-OAEP-512 + ASE/GCM 256
-	JWEHeader header = new JWEHeader(
-		JWEAlgorithm.RSA_OAEP_512,
-		EncryptionMethod.A256GCM
-	);
-	@Value("${jwt.expiration.refresh}")
-	long refreshExpiration;
-	@Value("${jwt.expiration.access}")
-	long accessTokenExpiration;
+	private static final String JWT_ISSUER = "Prompt Oven Service development group";
+	private static final List<String> JWT_AUDIENCE = List.of("prompt oven service");
+	private RSADecrypter decrypter;
+
 	@Autowired
 	private JwtSecret jwtSecret;
-	private RSAPrivateKey privateKey;
-
 
 	@PostConstruct
 	public void init() {
-		this.privateKey = jwtSecret.getPrivateKey();
-	}
-
-	// parse serialized token value to token object
-	private EncryptedJWT parseToken(String serializedJWT) {
-		EncryptedJWT candidateToken = null;
 		try {
-			candidateToken = EncryptedJWT.parse(serializedJWT);
-		} catch (ParseException e) {
-			throw new RuntimeException(e);
-		}
-
-		return candidateToken;
-	}
-
-	// decrypt token
-	private EncryptedJWT decryptToken(EncryptedJWT token) {
-
-		RSADecrypter decrypter = new RSADecrypter(privateKey);
-
-		try {
-			token.decrypt(decrypter);
-		} catch (JOSEException e) {
-			throw new RuntimeException(e);
-		}
-		return token;
-	}
-
-	private boolean validateTokenInfo(JWTClaimsSet claims) {
-		boolean vaildation = false;
-
-		String issuer = claims.getIssuer();
-		Date expire = claims.getExpirationTime();
-		Date now = new Date();
-		List<String> audience = claims.getAudience();
-		if (issuer.equals(jwtissuer) && audience.equals(jwtaudience) && now.before(expire)) {
-			vaildation = true;
-		}
-		return vaildation;
-	}
-
-	public boolean validateToken(String token) {
-		try {
-			EncryptedJWT targetToken = decryptToken(parseToken(token));
-			JWTClaimsSet claimsSet = targetToken.getJWTClaimsSet();
-			return validateTokenInfo(claimsSet);
+			RSAPrivateKey privateKey = jwtSecret.getPrivateKey();
+			this.decrypter = new RSADecrypter(privateKey);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			log.error("Failed to initialize JWT provider", e);
+			throw new RuntimeException("Failed to initialize JWT provider", e);
 		}
 	}
 
-	//get values of token
-	public String getClaimOfToken(String recievedToken, String typeOfClaim) {
-		try {
-			EncryptedJWT targetToken = decryptToken(parseToken(recievedToken));
-			JWTClaimsSet claimsSet = targetToken.getJWTClaimsSet();
-			if (validateTokenInfo(claimsSet)) {
-				System.out.println(claimsSet);
-				return claimsSet.getClaim(typeOfClaim).toString();
-			} else {
-				throw new RuntimeException("token expired");
+	public static class TokenInfo {
+		private final JWTClaimsSet claims;
+
+		private TokenInfo(JWTClaimsSet claims) {
+			this.claims = claims;
+		}
+
+		public String getRole() {
+			try {
+				return claims.getStringClaim("role");
+			} catch (ParseException e) {
+				return null;
 			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		}
+
+		public String getUserId() {
+			return claims.getSubject();
+		}
+
+		public String getClaim(String claimName) {
+			try {
+				Object claim = claims.getClaim(claimName);
+				return claim != null ? claim.toString() : null;
+			} catch (Exception e) {
+				return null;
+			}
 		}
 	}
 
-	public Date getTokenExpiration(String recievedToken) {
+	/**
+	 * Decrypts the token and returns the claims set
+	 */
+	private JWTClaimsSet decryptToken(String token) throws ParseException, JOSEException {
+		EncryptedJWT jwt = EncryptedJWT.parse(token);
+		jwt.decrypt(decrypter);
+		return jwt.getJWTClaimsSet();
+	}
+
+	/**
+	 * Validates the basic token claims (issuer, audience, expiration)
+	 */
+	private boolean validateClaims(JWTClaimsSet claims) {
 		try {
-			EncryptedJWT targetToken = decryptToken(parseToken(recievedToken));
-			JWTClaimsSet claimsSet = targetToken.getJWTClaimsSet();
-			if (validateTokenInfo(claimsSet)) {
-				return claimsSet.getExpirationTime();
-			} else {
-				throw new RuntimeException("token expired");
-			}
+			Date now = new Date();
+			return claims.getIssuer().equals(JWT_ISSUER) &&
+				   claims.getAudience().equals(JWT_AUDIENCE) &&
+				   now.before(claims.getExpirationTime()) &&
+				   now.after(claims.getNotBeforeTime());
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			log.error("Token validation failed: {}", e.getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Decrypts and validates token, returns TokenInfo if valid
+	 */
+	public TokenInfo validateAndDecryptToken(String token) {
+		try {
+			JWTClaimsSet claims = decryptToken(token);
+			return validateClaims(claims) ? new TokenInfo(claims) : null;
+		} catch (Exception e) {
+			log.error("Token processing failed: {}", e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Only decrypts token and returns claims without validation
+	 */
+	public TokenInfo decryptTokenOnly(String token) {
+		try {
+			JWTClaimsSet claims = decryptToken(token);
+			return new TokenInfo(claims);
+		} catch (Exception e) {
+			log.error("Token decryption failed: {}", e.getMessage());
+			return null;
 		}
 	}
 }

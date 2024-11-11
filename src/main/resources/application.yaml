@@ -8,6 +8,14 @@ spring:
     web-application-type: reactive
   application:
     name: gateway
+  config:
+    import:
+      - classpath:roles.yaml
+      - classpath:services.yaml
+  data:
+    redis:
+      host: localhost
+      port: 6379
   cloud:
     gateway:
       default-filters: # 기본 필터 설정
@@ -16,9 +24,7 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "http://localhost:3000"
-              - "http://localhost:3001"
-            allowCredentials: true
+              - "*"
             allowedHeaders:
               - x-requested-with
               - Authorization
@@ -32,71 +38,29 @@ spring:
               - GET
               - POST
               - DELETE
-      routes:
-        - id: auth-service
-          uri: lb://AUTH-SERVICE
-          predicates:
-            - Path=/auth-service/**
-          filters:
-            - StripPrefix=1
-
-        - id: product-service
-          uri: lb://PRODUCT-SERVICE
-          predicates:
-            - Path=/product-service/**
-          filters:
-            - StripPrefix=1
-        - id: settlement-service
-          uri: lb://SETTLEMENT-SERVICE
-          predicates:
-            - Path=/settlement-service/**
-          filters:
-            - StripPrefix=1
-        - id: cart-service
-          uri: lb://CART-SERVICE
-          predicates:
-            - Path=/cart-service/**
-          filters:
-            - StripPrefix=1
-
-        # JWT 이 필요한 경우
-        #- id: feed-service
-#          uri: lb://FEED-SERVICE
-#          predicates:
-#            - Path=/auth/**
-#          filters:
-#            - StripPrefix=1
-#            - JwtAuthenticationFilter
-  data:
-    redis:
-      host: localhost
-      port: 6379
+              - OPTIONS #this is for swagger ui
 
 eureka:
-    client:
-      serviceUrl:
-        defaultZone: http://localhost:8761/eureka/
-      register-with-eureka: true
-      fetch-registry: true
-    instance:
-      prefer-ip-address: false
-      instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+# Only keep these basic swagger settings
 springdoc:
   swagger-ui:
     enabled: true
-    path: /swagger-ui/index.html
+    disable-swagger-default-url: true
+    path: /swagger-ui.html
     config-url: /v3/api-docs/swagger-config
-    urls:
-      - url: "/auth-service/v3/api-docs"
-        name: Auth Service
-      - url: "/product-service/v3/api-docs"
-        name: Product Service
-      - url: "/settlement-service/v3/api-docs"
-        name: Settlement Service
-      - url: "/cart-service/v3/api-docs"
-        name: Cart Service
-    use-root-path: true
+    try-it-out-enabled: true
+    persist-authorization: true
+    syntax-highlight:
+      activated: true
   api-docs:
     enabled: true
     path: /v3/api-docs
@@ -113,9 +77,9 @@ jwt:
 
 logging:
   level:
-    org.springframework.jdbc: DEBUG
-    org.springframework.transaction: DEBUG
-    org.springframework.orm.jpa: DEBUG
+    org.springframework: INFO
+    org.springframework.cloud.gateway: DEBUG
+    org.springdoc: DEBUG
 
 
 ---
@@ -132,7 +96,7 @@ spring:
       port: 6379
   cloud:
     config:
-      name: gateway
+      name: gateway,roles,services
       fail-fast: false
 
 eureka:
