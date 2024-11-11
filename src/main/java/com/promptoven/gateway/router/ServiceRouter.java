@@ -79,28 +79,14 @@ public class ServiceRouter {
 						.modifyResponseBody(String.class, String.class, (exchange, s) -> {
 							if (s != null) {
 								log.debug("Modifying API docs response for {}", serviceId);
-								// Modify the servers URL to point to the gateway with the correct service path
 								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\"" + gatewayHost + serviceId+ "\""
+									"\"servers\":[{\"url\":\"http://" + gatewayHost + "\""
 								);
 								return Mono.just(modified);
 							}
 							return Mono.empty();
 						})
-						.addResponseHeader("Access-Control-Allow-Origin", "*")
-						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-						.addResponseHeader("Access-Control-Allow-Headers",
-							"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-					.uri("lb://" + serviceName)
-			);
-
-			// Add route for service-specific swagger-config
-			routes = routes.route(serviceId + "-swagger-config",
-				r -> r.path("/" + serviceId + "/v3/api-docs/swagger-config")
-					.filters(f -> f
-						.rewritePath("/" + serviceId + "/v3/api-docs/swagger-config", 
-								   "/v3/api-docs/swagger-config")
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",

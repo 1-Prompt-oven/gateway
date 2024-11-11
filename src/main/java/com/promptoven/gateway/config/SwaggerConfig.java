@@ -39,7 +39,7 @@ public class SwaggerConfig {
 			.filter(serviceName -> serviceName != null && !serviceName.trim().isEmpty())
 			.forEach(serviceName -> {
 				String serviceId = serviceName.toLowerCase().trim();
-				String url = "/" + serviceId + "/v3/api-docs";
+				String url = "http://" + serviceId + ":8080/v3/api-docs";
 				String displayName = serviceId.toUpperCase();
 
 				log.info("Adding Swagger URL for service: {} -> {}", displayName, url);
