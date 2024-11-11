@@ -53,9 +53,33 @@ public class ServiceRouter {
 	}
 
 	private RouteLocatorBuilder.Builder addSwaggerRoutes(RouteLocatorBuilder.Builder routes) {
+		// Add route for swagger-ui resources
+		routes = routes.route("swagger-ui",
+			r -> r.path("/swagger-ui/**", "/swagger-ui.html")
+				.filters(f -> f
+					.preserveHostHeader()
+					.addResponseHeader("Access-Control-Allow-Origin", "*")
+					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+					.addResponseHeader("Access-Control-Allow-Headers",
+						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
+				.uri(gatewayHost)
+		);
+
 		// Add route for swagger-config
 		routes = routes.route("swagger-config",
 			r -> r.path("/v3/api-docs/swagger-config")
+				.filters(f -> f
+					.preserveHostHeader()
+					.addResponseHeader("Access-Control-Allow-Origin", "*")
+					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+					.addResponseHeader("Access-Control-Allow-Headers",
+						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
+				.uri(gatewayHost)
+		);
+
+		// Add route for webjars resources
+		routes = routes.route("webjars",
+			r -> r.path("/webjars/**")
 				.filters(f -> f
 					.preserveHostHeader()
 					.addResponseHeader("Access-Control-Allow-Origin", "*")
