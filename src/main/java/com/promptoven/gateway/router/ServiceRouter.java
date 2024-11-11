@@ -79,7 +79,7 @@ public class ServiceRouter {
 								log.debug("Modifying API docs response for {}", serviceId);
 								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\"" + gatewayHost + "\""
+									"\"servers\":[{\"url\":\"" + gatewayHost + "/" + serviceId + "\""
 								);
 								return Mono.just(modified);
 							}
@@ -93,10 +93,12 @@ public class ServiceRouter {
 					.uri("lb://" + serviceName)
 			);
 
-			// Add route for swagger-config
+			// Add route for service-specific swagger-config
 			routes = routes.route(serviceId + "-swagger-config",
 				r -> r.path("/" + serviceId + "/v3/api-docs/swagger-config")
 					.filters(f -> f
+						.rewritePath("/" + serviceId + "/v3/api-docs/swagger-config", 
+								   "/v3/api-docs/swagger-config")
 						.preserveHostHeader()
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
