@@ -62,7 +62,7 @@ public class ServiceRouter {
 					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 					.addResponseHeader("Access-Control-Allow-Headers",
 						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri(gatewayHost)
+				.uri("forward:/swagger-ui/")
 		);
 
 		// Add route for swagger-config
@@ -74,7 +74,7 @@ public class ServiceRouter {
 					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 					.addResponseHeader("Access-Control-Allow-Headers",
 						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri(gatewayHost)
+				.uri("forward:/v3/api-docs/swagger-config")
 		);
 
 		// Add route for webjars resources
@@ -86,7 +86,7 @@ public class ServiceRouter {
 					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 					.addResponseHeader("Access-Control-Allow-Headers",
 						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri(gatewayHost)
+				.uri("forward:/webjars/")
 		);
 
 		for (String serviceName : serviceNames) {
@@ -103,7 +103,7 @@ public class ServiceRouter {
 								log.debug("Modifying API docs response for {}", serviceId);
 								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\"" + gatewayHost + "/" + serviceId + "\""
+									"\"servers\":[{\"url\":\"" + gatewayHost + serviceId + "\""
 								);
 								return Mono.just(modified);
 							}
