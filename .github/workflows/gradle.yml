@@ -69,7 +69,16 @@ jobs:
             sudo docker-compose up -d
             sudo docker image prune -f
 
+
+            
+      - name: Generate SARIF file
+        run: |
+          gradle dependencyCheckAnalyze --info
+          mv build/reports/dependency-check-report.sarif results.sarif
+      
       - name: Submit dependency graph
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
+          checkout_path: /home/runner/work/gateway/gateway
+          wait-for-processing: true
