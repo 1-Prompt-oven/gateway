@@ -60,6 +60,7 @@ public class SwaggerConfig {
 		properties.setConfigUrl("/v3/api-docs/swagger-config");
 		properties.setPath("/swagger-ui.html");
 		// Force all requests through gateway
+		properties.setUrl("http://localhost:" + gatewayPort + "/v3/api-docs");
 		properties.setDefaultModelsExpandDepth(1);
 		properties.setDefaultModelExpandDepth(1);
 		properties.setDisplayRequestDuration(true);
