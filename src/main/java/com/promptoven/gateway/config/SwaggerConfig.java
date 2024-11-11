@@ -1,5 +1,6 @@
 package com.promptoven.gateway.config;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,13 +43,14 @@ public class SwaggerConfig {
 			.forEach(serviceName -> {
 				String serviceId = serviceName.toLowerCase().trim();
 				String url = "/" + serviceId + "/v3/api-docs";
+				String displayName = serviceId.toUpperCase();
 
-				log.debug("Adding Swagger URL for service: {} -> {}", serviceId, url);
+				log.info("Adding Swagger URL for service: {} -> {}", displayName, url);
 
 				SwaggerUrl swaggerUrl = new SwaggerUrl();
-				swaggerUrl.setName(serviceId);
+				swaggerUrl.setName(displayName);
 				swaggerUrl.setUrl(url);
-				swaggerUrl.setDisplayName(serviceId.toUpperCase());
+				swaggerUrl.setDisplayName(displayName);
 				urls.add(swaggerUrl);
 			});
 

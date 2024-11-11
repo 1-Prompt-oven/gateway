@@ -56,7 +56,7 @@ public class ServiceRouter {
 	}
 
 	private RouteLocatorBuilder.Builder addSwaggerRoutes(RouteLocatorBuilder.Builder routes) {
-		// Add route for swagger-config only
+		// Add route for swagger-config
 		routes = routes.route("swagger-config",
 			r -> r.path("/v3/api-docs/swagger-config")
 				.filters(f -> f
@@ -79,14 +79,24 @@ public class ServiceRouter {
 						.modifyResponseBody(String.class, String.class, (exchange, s) -> {
 							if (s != null) {
 								log.debug("Modifying API docs response for {}", serviceId);
-								String modified = s.replaceAll(
-									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\"" + gatewayHost + "/" + serviceId + "\""
-								);
-								return Mono.just(modified);
+								// Don't modify the servers URL - let it use the gateway URL
+								return Mono.just(s);
 							}
 							return Mono.empty();
 						})
+						.addResponseHeader("Access-Control-Allow-Origin", "*")
+						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+						.addResponseHeader("Access-Control-Allow-Headers",
+							"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
+					.uri("lb://" + serviceName)
+			);
+
+			// Add route for service-specific swagger-config
+			routes = routes.route(serviceId + "-swagger-config",
+				r -> r.path("/" + serviceId + "/v3/api-docs/swagger-config")
+					.filters(f -> f
+						.rewritePath("/" + serviceId + "/v3/api-docs/swagger-config", 
+								   "/v3/api-docs/swagger-config")
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",
