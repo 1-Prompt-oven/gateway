@@ -1,6 +1,5 @@
 package com.promptoven.gateway.config;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +11,7 @@ import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,13 +28,10 @@ public class SwaggerConfig {
 	private String gatewayHost;
 
 	@Bean
-	public SwaggerUiConfigParameters swaggerUiConfigParameters() {
+	@Primary
+	public SwaggerUiConfigProperties swaggerUiConfigProperties() {
 		SwaggerUiConfigProperties properties = new SwaggerUiConfigProperties();
-		SwaggerUiConfigParameters config = new SwaggerUiConfigParameters(properties);
-
-		// Clear existing configurations
-		config.getUrls().clear();
-
+		
 		// Create set of SwaggerUrl objects
 		Set<SwaggerUrl> urls = new HashSet<>();
 
@@ -54,15 +51,10 @@ public class SwaggerConfig {
 				urls.add(swaggerUrl);
 			});
 
-		// Set all URLs at once
-		if (!urls.isEmpty()) {
-			config.setUrls(urls);
-			properties.setUrls(new HashSet<>(urls));
-		}
-
 		// Configure Swagger UI properties
 		properties.setPath("/swagger-ui.html");
 		properties.setConfigUrl("/v3/api-docs/swagger-config");
+		properties.setUrls(urls);
 		properties.setDisableSwaggerDefaultUrl(true);
 		properties.setUseRootPath(true);
 		properties.setDisplayRequestDuration(true);
@@ -85,7 +77,12 @@ public class SwaggerConfig {
 		properties.setDocExpansion("list");
 		properties.setValidatorUrl(null);
 
-		return config;
+		return properties;
+	}
+
+	@Bean
+	public SwaggerUiConfigParameters swaggerUiConfigParameters(SwaggerUiConfigProperties properties) {
+		return new SwaggerUiConfigParameters(properties);
 	}
 
 	@Bean
@@ -94,13 +91,5 @@ public class SwaggerConfig {
 			.group("gateway")
 			.pathsToMatch("/**")
 			.build();
-	}
-
-	@Bean
-	public SwaggerUiConfigProperties swaggerUiConfig() {
-		SwaggerUiConfigProperties properties = new SwaggerUiConfigProperties();
-		properties.setConfigUrl("/v3/api-docs/swagger-config");
-		properties.setPath("/swagger-ui.html");
-		return properties;
 	}
 }
