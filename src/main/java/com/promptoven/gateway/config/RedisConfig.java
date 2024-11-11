@@ -1,5 +1,8 @@
 package com.promptoven.gateway.config;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Duration;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +15,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import io.lettuce.core.ClientOptions;
@@ -36,64 +38,53 @@ public class RedisConfig {
 
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
-		log.info("Initializing Redis connection factory for {}:{}", redisHost, redisPort);
-
+		log.info("Creating Redis connection factory for {}:{}", redisHost, redisPort);
+		
+		// Basic configuration
 		RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration();
 		serverConfig.setHostName(redisHost);
 		serverConfig.setPort(redisPort);
-
+		
+		// Simple client config
 		LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-			.clientOptions(ClientOptions.builder()
-				.build())
 			.commandTimeout(Duration.ofSeconds(5))
 			.build();
 
-		LettuceConnectionFactory factory = new LettuceConnectionFactory(serverConfig, clientConfig);
-		factory.afterPropertiesSet();
-
-		return factory;
+		return new LettuceConnectionFactory(serverConfig, clientConfig);
 	}
 
 	@Bean
-	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-		RedisTemplate<String, Object> template = new RedisTemplate<>();
-		template.setConnectionFactory(connectionFactory);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-		mapper.activateDefaultTyping(
-			mapper.getPolymorphicTypeValidator(),
-			ObjectMapper.DefaultTyping.NON_FINAL,
-			JsonTypeInfo.As.PROPERTY
-		);
-		
-		Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(
-			mapper,
-			Object.class
-		);
-		
-		StringRedisSerializer stringSerializer = new StringRedisSerializer();
-		
-		template.setKeySerializer(stringSerializer);
-		template.setHashKeySerializer(stringSerializer);
-		template.setValueSerializer(serializer);
-		template.setHashValueSerializer(serializer);
-		template.afterPropertiesSet();
-		
-		return template;
+	public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
+		return new StringRedisTemplate(connectionFactory);
 	}
 
 	@EventListener(ContextRefreshedEvent.class)
-	public void onApplicationEvent() {
-		log.info("Verifying Redis connection...");
-		RedisConnectionFactory factory = redisConnectionFactory();
+	public void testConnection() {
 		try {
-			RedisConnection connection = factory.getConnection();
-			String pong = new String(connection.ping());
-			log.info("Redis connection verified: {}", pong);
-			connection.close();
+			// Test basic TCP connection first
+			log.info("Testing TCP connection to {}:{}", redisHost, redisPort);
+			Socket socket = new Socket();
+			socket.connect(new InetSocketAddress(redisHost, redisPort), 1000);
+			socket.close();
+			log.info("TCP connection successful");
+
+			// Test Redis connection
+			RedisConnection conn = redisConnectionFactory().getConnection();
+			String result = new String(conn.ping());
+			log.info("Redis PING result: {}", result);
+			conn.close();
+			
 		} catch (Exception e) {
-			log.error("Redis connection verification failed", e);
+			log.error("Connection test failed", e);
+			// Print detailed connection info
+			try {
+				InetAddress[] addresses = InetAddress.getAllByName(redisHost);
+				for (InetAddress addr : addresses) {
+					log.info("Resolved {} to: {}", redisHost, addr.getHostAddress());
+				}
+			} catch (Exception ex) {
+				log.error("DNS resolution failed", ex);
+			}
 		}
 	}
 }
