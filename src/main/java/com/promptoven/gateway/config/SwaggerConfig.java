@@ -39,7 +39,7 @@ public class SwaggerConfig {
 			.filter(serviceName -> serviceName != null && !serviceName.trim().isEmpty())
 			.forEach(serviceName -> {
 				String serviceId = serviceName.toLowerCase().trim();
-				String url = "http://" + serviceId + ":8080/v3/api-docs";
+				String url = "http://" + gatewayHost+ "/" + serviceId + "/v3/api-docs";
 				String displayName = serviceId.toUpperCase();
 
 				log.info("Adding Swagger URL for service: {} -> {}", displayName, url);
@@ -55,28 +55,11 @@ public class SwaggerConfig {
 		properties.setPath("/swagger-ui.html");
 		properties.setConfigUrl("/v3/api-docs/swagger-config");
 		properties.setUrls(urls);
-		properties.setDisableSwaggerDefaultUrl(true);
 		properties.setUseRootPath(true);
-		properties.setDisplayRequestDuration(true);
-		properties.setDefaultModelsExpandDepth(1);
-		properties.setDefaultModelExpandDepth(1);
-		properties.setShowExtensions(true);
-		properties.setShowCommonExtensions(true);
 		properties.setTryItOutEnabled(true);
-		properties.setFilter("true");
 		properties.setOperationsSorter("alpha");
 		properties.setTagsSorter("alpha");
-		properties.setLayout("BaseLayout");
 		properties.setPersistAuthorization(true);
-		properties.setQueryConfigEnabled(true);
-		properties.setDeepLinking(true);
-		properties.setDisplayOperationId(false);
-		properties.setDefaultModelsExpandDepth(-1);
-		properties.setDefaultModelExpandDepth(1);
-		properties.setDefaultModelRendering("example");
-		properties.setDocExpansion("list");
-		properties.setValidatorUrl(null);
-
 		return properties;
 	}
 
