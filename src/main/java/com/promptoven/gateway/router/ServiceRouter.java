@@ -79,8 +79,12 @@ public class ServiceRouter {
 						.modifyResponseBody(String.class, String.class, (exchange, s) -> {
 							if (s != null) {
 								log.debug("Modifying API docs response for {}", serviceId);
-								// Don't modify the servers URL - let it use the gateway URL
-								return Mono.just(s);
+								// Modify the servers URL to point to the gateway with the correct service path
+								String modified = s.replaceAll(
+									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
+									"\"servers\":[{\"url\":\"" + gatewayHost + "\""
+								);
+								return Mono.just(modified);
 							}
 							return Mono.empty();
 						})

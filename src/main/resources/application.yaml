@@ -53,21 +53,19 @@ eureka:
 # Only keep these basic swagger settings
 springdoc:
   swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-    config-url: /v3/api-docs/swagger-config
     urls-primary-name: gateway
     disable-swagger-default-url: true
-    try-it-out-enabled: true
-    persist-authorization: true
-    syntax-highlight:
-      activated: true
     use-root-path: true
     display-request-duration: true
     filter: true
-    urls:
-      - name: gateway
-        url: /v3/api-docs
+    operations-sorter: alpha
+    tags-sorter: alpha
+    doc-expansion: list
+    default-model-rendering: example
+    default-models-expand-depth: -1
+    show-extensions: true
+    show-common-extensions: true
+    enable-url-syntax-highlight: true
   api-docs:
     enabled: true
     path: /v3/api-docs
@@ -75,10 +73,6 @@ springdoc:
       enabled: true
   cache:
     disabled: true
-  show-actuator: true
-  enable-native-support: true
-  webjars:
-    prefix: /webjars
 
 jwt:
   rsa:

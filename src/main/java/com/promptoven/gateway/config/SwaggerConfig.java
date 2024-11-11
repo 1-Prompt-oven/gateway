@@ -57,6 +57,7 @@ public class SwaggerConfig {
 		// Set all URLs at once
 		if (!urls.isEmpty()) {
 			config.setUrls(urls);
+			properties.setUrls(new HashSet<>(urls));
 		}
 
 		// Configure Swagger UI properties
@@ -70,15 +71,19 @@ public class SwaggerConfig {
 		properties.setShowExtensions(true);
 		properties.setShowCommonExtensions(true);
 		properties.setTryItOutEnabled(true);
-		
+		properties.setFilter("true");
 		properties.setOperationsSorter("alpha");
 		properties.setTagsSorter("alpha");
 		properties.setLayout("BaseLayout");
 		properties.setPersistAuthorization(true);
 		properties.setQueryConfigEnabled(true);
-
-		// Add OAuth2 configuration if needed
-		properties.setOauth2RedirectUrl(gatewayHost + "/swagger-ui/oauth2-redirect.html");
+		properties.setDeepLinking(true);
+		properties.setDisplayOperationId(false);
+		properties.setDefaultModelsExpandDepth(-1);
+		properties.setDefaultModelExpandDepth(1);
+		properties.setDefaultModelRendering("example");
+		properties.setDocExpansion("list");
+		properties.setValidatorUrl(null);
 
 		return config;
 	}
@@ -89,5 +94,13 @@ public class SwaggerConfig {
 			.group("gateway")
 			.pathsToMatch("/**")
 			.build();
+	}
+
+	@Bean
+	public SwaggerUiConfigProperties swaggerUiConfig() {
+		SwaggerUiConfigProperties properties = new SwaggerUiConfigProperties();
+		properties.setConfigUrl("/v3/api-docs/swagger-config");
+		properties.setPath("/swagger-ui.html");
+		return properties;
 	}
 }
