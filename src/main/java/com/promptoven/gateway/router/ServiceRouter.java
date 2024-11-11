@@ -33,6 +33,9 @@ public class ServiceRouter {
 	@Value("#{'${authority.member}'.split(',')}")
 	private List<String> memberRoles;
 
+	@Value("${gateway.host}")
+	private String gatewayHost;
+
 	@Autowired
 	private JwtAuthorizationFilter jwtAuthorizationFilter;
 
@@ -63,7 +66,7 @@ public class ServiceRouter {
 								// Replace the server URL in the OpenAPI documentation
 								return Mono.just(s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\"http://localhost:8000\""
+									"\"servers\":[{\"url\":\"" + gatewayHost + "\""
 								));
 							}
 							return Mono.empty();

@@ -81,6 +81,8 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     org.springdoc: DEBUG
 
+gateway:
+  host: localhost:8000
 
 ---
 # application-prod.yml
@@ -107,3 +109,6 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
+
+gateway:
+  host: http://15.164.251.81:8000/
