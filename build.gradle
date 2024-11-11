@@ -3,7 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
-    id 'org.owasp.dependencycheck' version '8.5.1'
+    id 'org.owasp.dependencycheck' version '11.1.0'
 }
 
 group = 'com.promptoven'
@@ -47,6 +47,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'org.owasp:dependency-check-gradle:11.1.0'
 }
 
 dependencyManagement {
@@ -56,6 +58,7 @@ dependencyManagement {
 }
 
 dependencyCheck {
+    autoUpdate=false
     suppressionFile = 'dependency-check-suppression.xml'
     formats = ['HTML', 'SARIF']
     outputDirectory = "${buildDir}/reports/dependency-check"
