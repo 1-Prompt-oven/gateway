@@ -16,15 +16,10 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import io.lettuce.core.ClientOptions;
+import io.lettuce.core.protocol.ProtocolVersion;
 import lombok.extern.slf4j.Slf4j;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @Configuration
 @Slf4j
@@ -39,14 +34,17 @@ public class RedisConfig {
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
 		log.info("Creating Redis connection factory for {}:{}", redisHost, redisPort);
-		
-		// Basic configuration
+
 		RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration();
 		serverConfig.setHostName(redisHost);
 		serverConfig.setPort(redisPort);
-		
-		// Simple client config
+		serverConfig.setDatabase(0);
+
 		LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+			.clientOptions(ClientOptions.builder()
+				.protocolVersion(ProtocolVersion.RESP2)
+				.pingBeforeActivateConnection(true)
+				.build())
 			.commandTimeout(Duration.ofSeconds(5))
 			.build();
 
@@ -73,7 +71,7 @@ public class RedisConfig {
 			String result = new String(conn.ping());
 			log.info("Redis PING result: {}", result);
 			conn.close();
-			
+
 		} catch (Exception e) {
 			log.error("Connection test failed", e);
 			// Print detailed connection info
