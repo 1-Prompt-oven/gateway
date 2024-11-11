@@ -38,79 +38,83 @@ public class JwtProvider {
 		}
 	}
 
-	// parse serialized token value to token object
-	private EncryptedJWT parseAndDecrypt(String token) {
-		try {
-			EncryptedJWT jwt = EncryptedJWT.parse(token);
-			jwt.decrypt(decrypter);
-			return jwt;
-		} catch (ParseException e) {
-			log.error("Failed to parse JWT token", e);
-			throw new RuntimeException("Invalid JWT format", e);
-		} catch (JOSEException e) {
-			log.error("Failed to decrypt JWT token", e);
-			throw new RuntimeException("Failed to decrypt JWT", e);
+	public static class TokenInfo {
+		private final JWTClaimsSet claims;
+
+		private TokenInfo(JWTClaimsSet claims) {
+			this.claims = claims;
+		}
+
+		public String getRole() {
+			try {
+				return claims.getStringClaim("role");
+			} catch (ParseException e) {
+				return null;
+			}
+		}
+
+		public String getUserId() {
+			return claims.getSubject();
+		}
+
+		public String getClaim(String claimName) {
+			try {
+				Object claim = claims.getClaim(claimName);
+				return claim != null ? claim.toString() : null;
+			} catch (Exception e) {
+				return null;
+			}
 		}
 	}
 
-	public boolean validateToken(String token) {
+	/**
+	 * Decrypts the token and returns the claims set
+	 */
+	private JWTClaimsSet decryptToken(String token) throws ParseException, JOSEException {
+		EncryptedJWT jwt = EncryptedJWT.parse(token);
+		jwt.decrypt(decrypter);
+		return jwt.getJWTClaimsSet();
+	}
+
+	/**
+	 * Validates the basic token claims (issuer, audience, expiration)
+	 */
+	private boolean validateClaims(JWTClaimsSet claims) {
 		try {
-			if (token == null || token.isEmpty()) {
-				return false;
-			}
-
-			EncryptedJWT jwt = parseAndDecrypt(token);
-			JWTClaimsSet claims = jwt.getJWTClaimsSet();
 			Date now = new Date();
-
 			return claims.getIssuer().equals(JWT_ISSUER) &&
-				claims.getAudience().equals(JWT_AUDIENCE) &&
-				now.before(claims.getExpirationTime()) &&
-				now.after(claims.getNotBeforeTime());
-
+				   claims.getAudience().equals(JWT_AUDIENCE) &&
+				   now.before(claims.getExpirationTime()) &&
+				   now.after(claims.getNotBeforeTime());
 		} catch (Exception e) {
-			log.error("Failed to validate token: {}", e.getMessage());
+			log.error("Token validation failed: {}", e.getMessage());
 			return false;
 		}
 	}
 
-	public String getUserRole(String token) {
+	/**
+	 * Decrypts and validates token, returns TokenInfo if valid
+	 */
+	public TokenInfo validateAndDecryptToken(String token) {
 		try {
-			EncryptedJWT jwt = parseAndDecrypt(token);
-			JWTClaimsSet claims = jwt.getJWTClaimsSet();
-			return claims.getStringClaim("role");
+			JWTClaimsSet claims = decryptToken(token);
+			return validateClaims(claims) ? new TokenInfo(claims) : null;
 		} catch (Exception e) {
-			log.error("Failed to get user role from token", e);
+			log.error("Token processing failed: {}", e.getMessage());
 			return null;
 		}
 	}
 
-	public String getUserId(String token) {
+	/**
+	 * Only decrypts token and returns claims without validation
+	 */
+	public TokenInfo decryptTokenOnly(String token) {
 		try {
-			EncryptedJWT jwt = parseAndDecrypt(token);
-			JWTClaimsSet claims = jwt.getJWTClaimsSet();
-			return claims.getSubject();
+			JWTClaimsSet claims = decryptToken(token);
+			return new TokenInfo(claims);
 		} catch (Exception e) {
-			log.error("Failed to get user ID from token", e);
+			log.error("Token decryption failed: {}", e.getMessage());
 			return null;
-		}
-	}
-
-	public String getClaimOfToken(String token, String typeOfClaim) {
-		try {
-			if (!validateToken(token)) {
-				throw new RuntimeException("Invalid or expired token");
-			}
-
-			EncryptedJWT jwt = parseAndDecrypt(token);
-			JWTClaimsSet claims = jwt.getJWTClaimsSet();
-			Object claimValue = claims.getClaim(typeOfClaim);
-
-			return claimValue != null ? claimValue.toString() : null;
-
-		} catch (Exception e) {
-			log.error("Failed to get claim from token: {}", e.getMessage());
-			throw new RuntimeException("Failed to get claim from token", e);
 		}
 	}
 }

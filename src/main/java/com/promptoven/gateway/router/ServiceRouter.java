@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Mono;
 
 import com.promptoven.gateway.filter.JwtAuthorizationFilter;
+import com.promptoven.gateway.filter.RoleBasedAuthFilter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +24,20 @@ public class ServiceRouter {
 	@Value("#{'${services.names}'.split(',')}")
 	private List<String> serviceNames;
 
+	@Value("#{'${authority.admin}'.split(',')}")
+	private List<String> adminRoles;
+
+	@Value("#{'${authority.seller}'.split(',')}")
+	private List<String> sellerRoles;
+
+	@Value("#{'${authority.member}'.split(',')}")
+	private List<String> memberRoles;
+
 	@Autowired
 	private JwtAuthorizationFilter jwtAuthorizationFilter;
+
+	@Autowired
+	private RoleBasedAuthFilter roleBasedAuthFilter;
 
 	@Bean
 	public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
@@ -101,6 +114,7 @@ public class ServiceRouter {
 					.filters(f -> f
 						.stripPrefix(0)
 						.filter(jwtAuthorizationFilter.apply(new JwtAuthorizationFilter.Config()))
+						.filter(roleBasedAuthFilter.apply(new RoleBasedAuthFilter.Config(adminRoles)))
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",
@@ -115,6 +129,7 @@ public class ServiceRouter {
 					.filters(f -> f
 						.stripPrefix(0)
 						.filter(jwtAuthorizationFilter.apply(new JwtAuthorizationFilter.Config()))
+						.filter(roleBasedAuthFilter.apply(new RoleBasedAuthFilter.Config(sellerRoles)))
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",
@@ -129,6 +144,7 @@ public class ServiceRouter {
 					.filters(f -> f
 						.stripPrefix(0)
 						.filter(jwtAuthorizationFilter.apply(new JwtAuthorizationFilter.Config()))
+						.filter(roleBasedAuthFilter.apply(new RoleBasedAuthFilter.Config(memberRoles)))
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",
