@@ -53,6 +53,18 @@ public class ServiceRouter {
 	}
 
 	private RouteLocatorBuilder.Builder addSwaggerRoutes(RouteLocatorBuilder.Builder routes) {
+		// Add route for swagger-config
+		routes = routes.route("swagger-config",
+			r -> r.path("/v3/api-docs/swagger-config")
+				.filters(f -> f
+					.preserveHostHeader()
+					.addResponseHeader("Access-Control-Allow-Origin", "*")
+					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+					.addResponseHeader("Access-Control-Allow-Headers",
+						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
+				.uri(gatewayHost)
+		);
+
 		for (String serviceName : serviceNames) {
 			String serviceId = serviceName.toLowerCase();
 

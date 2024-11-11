@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springdoc.core.properties.AbstractSwaggerUiConfigProperties.SwaggerUrl;
 import org.springdoc.core.properties.SwaggerUiConfigParameters;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
@@ -22,8 +23,8 @@ public class SwaggerConfig {
 	@Value("#{'${services.names}'.split(',')}")
 	private List<String> serviceNames;
 
-	@Value("${server.port:8000}")
-	private String gatewayPort;
+	@Value("${gateway.host}")
+	private String gatewayHost;
 
 	@Bean
 	public SwaggerUiConfigParameters swaggerUiConfigParameters() {
@@ -40,7 +41,6 @@ public class SwaggerConfig {
 			.filter(serviceName -> serviceName != null && !serviceName.trim().isEmpty())
 			.forEach(serviceName -> {
 				String serviceId = serviceName.toLowerCase().trim();
-				// Make sure this matches the route path in ServiceRouter
 				String url = "/" + serviceId + "/v3/api-docs";
 
 				log.debug("Adding Swagger URL for service: {} -> {}", serviceId, url);
@@ -67,7 +67,25 @@ public class SwaggerConfig {
 		properties.setDefaultModelExpandDepth(1);
 		properties.setShowExtensions(true);
 		properties.setShowCommonExtensions(true);
+		properties.setTryItOutEnabled(true);
+		
+		properties.setOperationsSorter("alpha");
+		properties.setTagsSorter("alpha");
+		properties.setLayout("BaseLayout");
+		properties.setPersistAuthorization(true);
+		properties.setQueryConfigEnabled(true);
+
+		// Add OAuth2 configuration if needed
+		properties.setOauth2RedirectUrl(gatewayHost + "/swagger-ui/oauth2-redirect.html");
 
 		return config;
+	}
+
+	@Bean
+	public GroupedOpenApi gatewayApi() {
+		return GroupedOpenApi.builder()
+			.group("gateway")
+			.pathsToMatch("/**")
+			.build();
 	}
 }
