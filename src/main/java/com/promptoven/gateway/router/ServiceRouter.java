@@ -64,7 +64,7 @@ public class ServiceRouter {
 					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 					.addResponseHeader("Access-Control-Allow-Headers",
 						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri("http://localhost:" + serverPort)
+				.uri(gatewayHost)
 		);
 
 		for (String serviceName : serviceNames) {
@@ -82,7 +82,7 @@ public class ServiceRouter {
 								// Modify the servers URL to point to the gateway with the correct service path
 								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\"" + gatewayHost + "\""
+									"\"servers\":[{\"url\":\"" + gatewayHost + serviceId+ "\""
 								);
 								return Mono.just(modified);
 							}
