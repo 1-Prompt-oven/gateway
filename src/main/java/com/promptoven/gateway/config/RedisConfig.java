@@ -94,28 +94,6 @@ public class RedisConfig {
         }
     }
 
-	@PostConstruct
-    public void testConnection() {
-        log.info("Testing Redis connection...");
-        
-        try (Socket socket = new Socket()) {
-            // Test TCP connection first
-            socket.connect(new InetSocketAddress(host, port), 5000);
-            log.info("TCP connection successful");
-            
-            // Try Redis PING using raw socket
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            
-            out.println("PING");
-            String response = in.readLine();
-            log.info("Redis raw response: {}", response);
-            
-        } catch (Exception e) {
-            log.error("Connection test failed", e);
-        }
-    }
-
 	@Bean
 	public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
 		RedisTemplate<String, String> template = new RedisTemplate<>();
