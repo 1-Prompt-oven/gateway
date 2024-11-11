@@ -8,15 +8,10 @@ services:
       - "8000:8000"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATA_REDIS_HOST=garnet
+      - SPRING_DATA_REDIS_HOST=172.18.0.4
       - SPRING_DATA_REDIS_PORT=6379
     networks:
       - msa-network
-    dns:
-      - 127.0.0.11 # docker dns
-    dns_search:
-      - .
-      - docker.internal
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/actuator/health"]
       interval: 30s
