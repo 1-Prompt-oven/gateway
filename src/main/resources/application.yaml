@@ -101,6 +101,14 @@ spring:
     redis:
       host: garnet
       port: 6379
+      connect-timeout: 5000  # Add timeout settings
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1
   cloud:
     config:
       name: gateway,roles,services
