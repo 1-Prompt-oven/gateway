@@ -60,8 +60,8 @@ public class ServiceRouter {
 			routes = routes.route(serviceId + "-api-docs",
 				r -> r.path("/" + serviceId + "/v3/api-docs/**")
 					.filters(f -> f
-						.rewritePath("/" + serviceId + "/v3/api-docs/(?<remaining>.*)", 
-								   "/v3/api-docs/${remaining}")
+						.rewritePath("/" + serviceId + "/v3/api-docs(?<remaining>.*)", 
+								   "/v3/api-docs${remaining}")
 						.modifyResponseBody(String.class, String.class, (exchange, s) -> {
 							if (s != null) {
 								log.debug("Modifying API docs response for {}", serviceId);
@@ -69,14 +69,11 @@ public class ServiceRouter {
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
 									"\"servers\":[{\"url\":\"" + gatewayHost + "\""
 								);
-								modified = modified.replaceAll(
-									"\"basePath\":\\s*\"/" + serviceId + "\"",
-									"\"basePath\":\"\""
-								);
 								return Mono.just(modified);
 							}
 							return Mono.empty();
 						})
+						.preserveHostHeader()
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",
@@ -84,10 +81,11 @@ public class ServiceRouter {
 					.uri("lb://" + serviceName)
 			);
 
-			// Add route for swagger-ui resources
-			routes = routes.route(serviceId + "-swagger-ui",
-				r -> r.path("/swagger-ui/**")
+			// Add route for swagger-config
+			routes = routes.route(serviceId + "-swagger-config",
+				r -> r.path("/" + serviceId + "/v3/api-docs/swagger-config")
 					.filters(f -> f
+						.preserveHostHeader()
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",
