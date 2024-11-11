@@ -59,12 +59,9 @@ public class SwaggerConfig {
 		// Configure Swagger UI to use Gateway URL
 		properties.setConfigUrl("/v3/api-docs/swagger-config");
 		properties.setPath("/swagger-ui.html");
-		// Force all requests through gateway
-		properties.setUrl("http://localhost:" + gatewayPort + "/v3/api-docs");
-		properties.setDefaultModelsExpandDepth(1);
-		properties.setDefaultModelExpandDepth(1);
-		properties.setDisplayRequestDuration(true);
-		properties.setShowCommonExtensions(true);
+        properties.setConfigUrl("/v3/api-docs/swagger-config");
+        properties.setDisableSwaggerDefaultUrl(true);
+        properties.setUseRootPath(true);
 
 		return config;
 	}
