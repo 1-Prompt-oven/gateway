@@ -4,6 +4,8 @@ on:
     branches: [ "main" ]
 permissions:
   contents: read
+  id-token: write
+  security-events: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -66,3 +68,8 @@ jobs:
             echo "SPRING_PROFILES_ACTIVE=prod" > .env
             sudo docker-compose up -d
             sudo docker image prune -f
+
+      - name: Submit dependency graph
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
