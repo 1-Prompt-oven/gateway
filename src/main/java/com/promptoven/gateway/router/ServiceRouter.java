@@ -36,6 +36,9 @@ public class ServiceRouter {
 	@Value("${gateway.host}")
 	private String gatewayHost;
 
+	@Value("${server.port}")
+	private String serverPort;
+
 	@Autowired
 	private JwtAuthorizationFilter jwtAuthorizationFilter;
 
@@ -57,36 +60,33 @@ public class ServiceRouter {
 		routes = routes.route("swagger-ui",
 			r -> r.path("/swagger-ui/**", "/swagger-ui.html")
 				.filters(f -> f
-					.preserveHostHeader()
 					.addResponseHeader("Access-Control-Allow-Origin", "*")
 					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 					.addResponseHeader("Access-Control-Allow-Headers",
 						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri("forward:/swagger-ui/")
+				.uri("http://localhost:" + serverPort)
 		);
 
 		// Add route for swagger-config
 		routes = routes.route("swagger-config",
 			r -> r.path("/v3/api-docs/swagger-config")
 				.filters(f -> f
-					.preserveHostHeader()
 					.addResponseHeader("Access-Control-Allow-Origin", "*")
 					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 					.addResponseHeader("Access-Control-Allow-Headers",
 						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri("forward:/v3/api-docs/swagger-config")
+				.uri("http://localhost:" + serverPort)
 		);
 
 		// Add route for webjars resources
 		routes = routes.route("webjars",
 			r -> r.path("/webjars/**")
 				.filters(f -> f
-					.preserveHostHeader()
 					.addResponseHeader("Access-Control-Allow-Origin", "*")
 					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 					.addResponseHeader("Access-Control-Allow-Headers",
 						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
-				.uri("forward:/webjars/")
+				.uri("http://localhost:" + serverPort)
 		);
 
 		for (String serviceName : serviceNames) {
@@ -103,13 +103,12 @@ public class ServiceRouter {
 								log.debug("Modifying API docs response for {}", serviceId);
 								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\"" + gatewayHost + serviceId + "\""
+									"\"servers\":[{\"url\":\"" + gatewayHost + "/" + serviceId + "\""
 								);
 								return Mono.just(modified);
 							}
 							return Mono.empty();
 						})
-						.preserveHostHeader()
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",
