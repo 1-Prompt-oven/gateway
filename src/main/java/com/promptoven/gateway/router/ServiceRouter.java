@@ -56,17 +56,22 @@ public class ServiceRouter {
 		for (String serviceName : serviceNames) {
 			String serviceId = serviceName.toLowerCase();
 
-			// API docs route with CORS
+			// Add route for API docs
 			routes = routes.route(serviceId + "-api-docs",
 				r -> r.path("/" + serviceId + "/v3/api-docs/**")
 					.filters(f -> f
-						.rewritePath("/" + serviceId + "/v3/api-docs/(?<remaining>.*)", "/v3/api-docs/${remaining}")
+						.rewritePath("/" + serviceId + "/v3/api-docs/(?<remaining>.*)", 
+								   "/v3/api-docs/${remaining}")
 						.modifyResponseBody(String.class, String.class, (exchange, s) -> {
 							if (s != null) {
-								// Replace the server URL in the OpenAPI documentation
+								log.debug("Modifying API docs response for {}", serviceId);
 								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
 									"\"servers\":[{\"url\":\"" + gatewayHost + "\""
+								);
+								modified = modified.replaceAll(
+									"\"basePath\":\\s*\"/" + serviceId + "\"",
+									"\"basePath\":\"\""
 								);
 								return Mono.just(modified);
 							}
@@ -79,11 +84,10 @@ public class ServiceRouter {
 					.uri("lb://" + serviceName)
 			);
 
-			// Add route for swagger-config
-			routes = routes.route(serviceId + "-swagger-config",
-				r -> r.path("/" + serviceId + "/v3/api-docs/swagger-config")
+			// Add route for swagger-ui resources
+			routes = routes.route(serviceId + "-swagger-ui",
+				r -> r.path("/swagger-ui/**")
 					.filters(f -> f
-						.rewritePath("/" + serviceId + "/v3/api-docs/swagger-config", "/v3/api-docs/swagger-config")
 						.addResponseHeader("Access-Control-Allow-Origin", "*")
 						.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						.addResponseHeader("Access-Control-Allow-Headers",

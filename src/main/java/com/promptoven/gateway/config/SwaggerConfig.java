@@ -35,24 +35,20 @@ public class SwaggerConfig {
 
 		// Create set of SwaggerUrl objects
 		Set<SwaggerUrl> urls = new HashSet<>();
-		SwaggerUrl gwSwagger = new SwaggerUrl();
-		gwSwagger.setName("gateway");
-		gwSwagger.setUrl("/v3/api-docs");
-		gwSwagger.setDisplayName("Gateway");
-		urls.add(gwSwagger);
 
 		serviceNames.stream()
 			.filter(serviceName -> serviceName != null && !serviceName.trim().isEmpty())
 			.forEach(serviceName -> {
 				String serviceId = serviceName.toLowerCase().trim();
+				// Make sure this matches the route path in ServiceRouter
 				String url = "/" + serviceId + "/v3/api-docs";
 
-				log.info("Adding Swagger URL for service: {} -> {}", serviceId, url);
+				log.debug("Adding Swagger URL for service: {} -> {}", serviceId, url);
 
 				SwaggerUrl swaggerUrl = new SwaggerUrl();
 				swaggerUrl.setName(serviceId);
 				swaggerUrl.setUrl(url);
-				swaggerUrl.setDisplayName(serviceId);
+				swaggerUrl.setDisplayName(serviceId.toUpperCase());
 				urls.add(swaggerUrl);
 			});
 
@@ -61,12 +57,16 @@ public class SwaggerConfig {
 			config.setUrls(urls);
 		}
 
-		// Configure Swagger UI to use Gateway URL
-		properties.setConfigUrl("/v3/api-docs/swagger-config");
+		// Configure Swagger UI properties
 		properties.setPath("/swagger-ui.html");
-        properties.setConfigUrl("/v3/api-docs/swagger-config");
-        properties.setDisableSwaggerDefaultUrl(true);
-        properties.setUseRootPath(true);
+		properties.setConfigUrl("/v3/api-docs/swagger-config");
+		properties.setDisableSwaggerDefaultUrl(true);
+		properties.setUseRootPath(true);
+		properties.setDisplayRequestDuration(true);
+		properties.setDefaultModelsExpandDepth(1);
+		properties.setDefaultModelExpandDepth(1);
+		properties.setShowExtensions(true);
+		properties.setShowCommonExtensions(true);
 
 		return config;
 	}
