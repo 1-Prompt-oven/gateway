@@ -33,6 +33,12 @@ public class ServiceRouter {
 	@Value("#{'${authority.member}'.split(',')}")
 	private List<String> memberRoles;
 
+	@Value("${gateway.host}")
+	private String gatewayHost;
+
+	@Value("${server.port}")
+	private String serverPort;
+
 	@Autowired
 	private JwtAuthorizationFilter jwtAuthorizationFilter;
 
@@ -50,21 +56,34 @@ public class ServiceRouter {
 	}
 
 	private RouteLocatorBuilder.Builder addSwaggerRoutes(RouteLocatorBuilder.Builder routes) {
+		// Add route for swagger-config
+		routes = routes.route("swagger-config",
+			r -> r.path("/v3/api-docs/swagger-config")
+				.filters(f -> f
+					.addResponseHeader("Access-Control-Allow-Origin", "*")
+					.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+					.addResponseHeader("Access-Control-Allow-Headers",
+						"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN"))
+				.uri(gatewayHost)
+		);
+
 		for (String serviceName : serviceNames) {
 			String serviceId = serviceName.toLowerCase();
 
-			// API docs route with CORS
+			// Add route for API docs
 			routes = routes.route(serviceId + "-api-docs",
-				r -> r.path("/" + serviceId + "/v3/api-docs")
+				r -> r.path("/" + serviceId + "/v3/api-docs/**")
 					.filters(f -> f
-						.rewritePath("/" + serviceId + "/v3/api-docs", "/v3/api-docs")
+						.rewritePath("/" + serviceId + "/v3/api-docs(?<remaining>.*)", 
+								   "/v3/api-docs${remaining}")
 						.modifyResponseBody(String.class, String.class, (exchange, s) -> {
 							if (s != null) {
-								// Replace the server URL in the OpenAPI documentation
-								return Mono.just(s.replaceAll(
+								log.debug("Modifying API docs response for {}", serviceId);
+								String modified = s.replaceAll(
 									"\"servers\":\\s*\\[\\s*\\{\\s*\"url\":\\s*\"[^\"]*\"",
-									"\"servers\":[{\"url\":\"http://localhost:8000\""
-								));
+									"\"servers\":[{\"url\":" + gatewayHost
+								);
+								return Mono.just(modified);
 							}
 							return Mono.empty();
 						})
@@ -75,7 +94,6 @@ public class ServiceRouter {
 					.uri("lb://" + serviceName)
 			);
 		}
-
 		return routes;
 	}
 

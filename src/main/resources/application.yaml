@@ -53,17 +53,24 @@ eureka:
 # Only keep these basic swagger settings
 springdoc:
   swagger-ui:
-    enabled: true
+    urls-primary-name: gateway
     disable-swagger-default-url: true
-    path: /swagger-ui.html
-    config-url: /v3/api-docs/swagger-config
-    try-it-out-enabled: true
-    persist-authorization: true
-    syntax-highlight:
-      activated: true
+    use-root-path: true
+    display-request-duration: true
+    filter: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+    doc-expansion: list
+    default-model-rendering: example
+    default-models-expand-depth: -1
+    show-extensions: true
+    show-common-extensions: true
+    enable-url-syntax-highlight: true
   api-docs:
     enabled: true
     path: /v3/api-docs
+    groups:
+      enabled: true
   cache:
     disabled: true
 
@@ -80,7 +87,15 @@ logging:
     org.springframework: INFO
     org.springframework.cloud.gateway: DEBUG
     org.springdoc: DEBUG
+    org.springframework.web: DEBUG
 
+gateway:
+  host: localhost:8000
+
+management:
+  endpoint:
+    health:
+      show-details: always
 
 ---
 # application-prod.yml
@@ -94,6 +109,14 @@ spring:
     redis:
       host: garnet
       port: 6379
+      connect-timeout: 5000  # Add timeout settings
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1
   cloud:
     config:
       name: gateway,roles,services
@@ -107,3 +130,6 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
+
+gateway:
+  host: http://15.164.251.81:8000/
