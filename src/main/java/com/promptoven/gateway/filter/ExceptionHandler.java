@@ -17,32 +17,33 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 public class ExceptionHandler {
-    private final ObjectMapper objectMapper;
 
-    public ExceptionHandler() {
-        this.objectMapper = new ObjectMapper();
-    }
+	private final ObjectMapper objectMapper;
 
-    public Mono<Void> handleException(ServerWebExchange exchange, BaseResponseStatus status) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+	public ExceptionHandler() {
+		this.objectMapper = new ObjectMapper();
+	}
 
-        ApiResponse<String> apiResponse = new ApiResponse<>(
-            HttpStatus.UNAUTHORIZED.value(),
-            status.getCode(),
-            status.getMessage()
-        );
+	public Mono<Void> handleException(ServerWebExchange exchange, BaseResponseStatus status) {
+		ServerHttpResponse response = exchange.getResponse();
+		response.setStatusCode(HttpStatus.UNAUTHORIZED);
+		response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        byte[] data;
-        try {
-            data = objectMapper.writeValueAsBytes(apiResponse);
-        } catch (Exception e) {
-            log.error("Error processing JSON response", e);
-            data = "{}".getBytes();
-        }
+		ApiResponse<String> apiResponse = new ApiResponse<>(
+			HttpStatus.UNAUTHORIZED.value(),
+			status.getCode(),
+			status.getMessage()
+		);
 
-        DataBuffer buffer = response.bufferFactory().wrap(data);
-        return response.writeWith(Mono.just(buffer));
-    }
+		byte[] data;
+		try {
+			data = objectMapper.writeValueAsBytes(apiResponse);
+		} catch (Exception e) {
+			log.error("Error processing JSON response", e);
+			data = "{}".getBytes();
+		}
+
+		DataBuffer buffer = response.bufferFactory().wrap(data);
+		return response.writeWith(Mono.just(buffer));
+	}
 } 
