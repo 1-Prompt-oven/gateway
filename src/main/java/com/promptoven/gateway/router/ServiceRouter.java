@@ -2,7 +2,6 @@ package com.promptoven.gateway.router;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.GatewayFilterSpec;
@@ -26,29 +25,20 @@ import reactor.core.publisher.Mono;
 @Configuration
 public class ServiceRouter {
 
+	private final JwtAuthorizationFilter jwtAuthorizationFilter;
+	private final RoleBasedAuthFilter roleBasedAuthFilter;
 	@Value("#{'${services.names}'.split(',')}")
 	private List<String> serviceNames;
-
 	@Value("#{'${authority.admin}'.split(',')}")
 	private List<String> adminRoles;
-
 	@Value("#{'${authority.seller}'.split(',')}")
 	private List<String> sellerRoles;
-
 	@Value("#{'${authority.member}'.split(',')}")
 	private List<String> memberRoles;
-
 	@Value("${gateway.host}")
 	private String gatewayHost;
-
 	@Value("${server.port}")
 	private String serverPort;
-
-	@Autowired
-	private JwtAuthorizationFilter jwtAuthorizationFilter;
-
-	@Autowired
-	private RoleBasedAuthFilter roleBasedAuthFilter;
 
 	private static GatewayFilterSpec getDefaultGatewayFilterSpec(GatewayFilterSpec f) {
 		return f
@@ -58,7 +48,7 @@ public class ServiceRouter {
 				"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN");
 	}
 
-	private static GatewayFilterSpec applyAuthFilters(GatewayFilterSpec f, List<String> roles) {
+	private GatewayFilterSpec applyAuthFilters(GatewayFilterSpec f, List<String> roles) {
 		return f
 			.filter(jwtAuthorizationFilter.apply(new JwtAuthorizationFilter.Config()))
 			.filter(roleBasedAuthFilter.apply(new RoleBasedAuthFilter.Config(roles)));
