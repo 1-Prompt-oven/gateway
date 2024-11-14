@@ -39,6 +39,9 @@ spring:
               - POST
               - DELETE
               - OPTIONS #this is for swagger ui
+            exposed-headers:
+              - Authorization
+              - Refreshtoken
 
 eureka:
   client:
@@ -90,7 +93,7 @@ logging:
     org.springframework.web: DEBUG
 
 gateway:
-  host: localhost:8000
+  host: "http://localhost:8000/"
 
 management:
   endpoint:
@@ -132,4 +135,4 @@ eureka:
     prefer-ip-address: true
 
 gateway:
-  host: http://15.164.251.81:8000/
+  host: "http://15.164.251.81:8000/"

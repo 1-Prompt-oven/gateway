@@ -17,8 +17,7 @@ public class RoleBasedAuthFilter extends AbstractGatewayFilterFactory<RoleBasedA
 
 	private final ExceptionHandler exceptionHandler;
 
-	public RoleBasedAuthFilter(ExceptionHandler exceptionHandler,
-			List<String> permittedRoles) {
+	public RoleBasedAuthFilter(ExceptionHandler exceptionHandler) {
 		super(Config.class);
 		this.exceptionHandler = exceptionHandler;
 	}
@@ -28,7 +27,7 @@ public class RoleBasedAuthFilter extends AbstractGatewayFilterFactory<RoleBasedA
 		return (exchange, chain) -> {
 			ServerHttpRequest request = exchange.getRequest();
 			String userRole = request.getHeaders().getFirst("X-User-Role");
-			
+
 			if (userRole == null) {
 				return exceptionHandler.handleException(exchange, BaseResponseStatus.NO_PERMISSION);
 			}
