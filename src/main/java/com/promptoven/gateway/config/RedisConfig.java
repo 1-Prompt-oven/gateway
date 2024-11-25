@@ -13,7 +13,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import io.lettuce.core.ClientOptions;
-import io.lettuce.core.protocol.ProtocolVersion;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
@@ -37,8 +36,7 @@ public class RedisConfig {
 
 		LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
 			.clientOptions(ClientOptions.builder()
-				.protocolVersion(ProtocolVersion.RESP2)
-				.pingBeforeActivateConnection(true)
+				.autoReconnect(true)
 				.build())
 			.commandTimeout(Duration.ofSeconds(5))
 			.build();
