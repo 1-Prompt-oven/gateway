@@ -12,11 +12,15 @@ spring:
     import:
       - classpath:roles.yaml
       - classpath:services.yaml
+      - "optional:configserver:http://localhost:8888"
   data:
     redis:
       host: localhost
       port: 6379
   cloud:
+    config:
+      name: gateway,roles,services
+      fail-fast: false
     gateway:
       default-filters: # 기본 필터 설정
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials

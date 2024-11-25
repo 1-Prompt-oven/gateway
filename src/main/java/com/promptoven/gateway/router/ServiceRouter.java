@@ -163,7 +163,7 @@ public class ServiceRouter {
 			((ObjectNode)info).put("title", "Promptoven " + serviceId + " API");
 			((ObjectNode)info).put("description", "API for " + serviceId + " service");
 			((ObjectNode)info).put("version", "0.0.1");
-			((ObjectNode)info).put("termsOfService", "명시되지 않은 한 대한민국의 정보통신망이용촉진및정보보호등에관한법률등 관련법령을 준용합니다.");
+			((ObjectNode)info).put("termsOfService", "/termsOfService.html");
 		}
 		//update the url to point to the gateway
 		JsonNode servers = node.get("servers");
