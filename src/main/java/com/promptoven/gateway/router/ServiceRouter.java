@@ -157,9 +157,17 @@ public class ServiceRouter {
 			log.error("Error parsing swagger doc for service: {}", serviceId);
 			return s;
 		}
+		//update APi Doc's Name and descriptions
+		JsonNode info = node.get("info");
+		if (null != info) {
+			((ObjectNode)info).put("title", "Promptoven " + serviceId + " API");
+			((ObjectNode)info).put("description", "API for " + serviceId + " service");
+			((ObjectNode)info).put("version", "0.0.1");
+			((ObjectNode)info).put("termsOfService", "명시되지 않은 한 대한민국의 정보통신망이용촉진및정보보호등에관한법률등 관련법령을 준용합니다.");
+		}
 		//update the url to point to the gateway
 		JsonNode servers = node.get("servers");
-		if (servers != null && servers.isArray()) {
+		if (null != servers && servers.isArray()) {
 			for (JsonNode server : servers) {
 				JsonNode url = server.get("url");
 				if (url != null) {
@@ -169,7 +177,7 @@ public class ServiceRouter {
 		}
 		//update the security in top level of the swagger doc
 		JsonNode security = node.get("security");
-		if (security == null) {
+		if (null == security) {
 			((ObjectNode)node).putArray("security")
 				.addObject()
 				.putArray("JWT");
@@ -177,7 +185,7 @@ public class ServiceRouter {
 		//add the security scheme to the swagger doc
 		JsonNode components = node.get("components");
 		JsonNode securitySchemes = components.get("securitySchemes");
-		if (securitySchemes == null) {
+		if (null == securitySchemes) {
 			((ObjectNode)components).putObject("securitySchemes");
 			securitySchemes = components.get("securitySchemes");
 		}
