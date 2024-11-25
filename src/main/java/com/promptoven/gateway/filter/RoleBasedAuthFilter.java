@@ -33,8 +33,9 @@ public class RoleBasedAuthFilter extends AbstractGatewayFilterFactory<RoleBasedA
 			}
 
 			if (!config.getPermittedRoles().contains(userRole)) {
-				log.warn("Access denied for role {} on path {}, Permitted on {}", userRole, request.getPath().value(),
-					config.getPermittedRoles());
+				log.warn("Access denied for role {} on path {}, Permitted roles: {}", userRole,
+					request.getPath().value(),
+					String.join(", ", config.getPermittedRoles()));
 				return exceptionHandler.handleException(exchange, BaseResponseStatus.NO_PERMISSION);
 			}
 
