@@ -61,6 +61,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
+            sudo docker stop gateway  || true
             sudo docker rm -f gateway || true
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gateway
             cd ~/gateway    # gateway 디렉토리로 이동
