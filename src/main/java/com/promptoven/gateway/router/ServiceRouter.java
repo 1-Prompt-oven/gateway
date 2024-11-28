@@ -42,9 +42,9 @@ public class ServiceRouter {
 
 	private static GatewayFilterSpec getDefaultGatewayFilterSpec(GatewayFilterSpec f) {
 		return f
-			.addResponseHeader("Access-Control-Allow-Origin", "*")
-			.addResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			.addResponseHeader("Access-Control-Allow-Headers",
+			.setResponseHeader("Access-Control-Allow-Origin", "*")
+			.setResponseHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			.setResponseHeader("Access-Control-Allow-Headers",
 				"Authorization, Refreshtoken, Content-Type, X-Requested-With, X-XSRF-TOKEN");
 	}
 
