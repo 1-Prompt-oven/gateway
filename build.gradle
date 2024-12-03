@@ -54,6 +54,8 @@ dependencies {
     implementation 'org.webjars.npm:swagger-ui-dist:5.10.3'
 
     implementation 'io.lettuce:lettuce-core:6.5.0.RELEASE'
+
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 }
 
 dependencyManagement {
