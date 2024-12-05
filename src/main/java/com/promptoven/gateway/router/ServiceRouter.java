@@ -100,9 +100,9 @@ public class ServiceRouter {
 			String serviceId = serviceName.toLowerCase();
 			String baseServiceName = serviceId.replace("-service", "");
 
-			// Default protected routes (requires authentication but no specific role)
+			// Default routes for this service - matches /v{n}/
 			routes = routes.route(serviceId + "-default-routes",
-				r -> r.path("/v1/" + baseServiceName + "/**")
+				r -> r.path("/v**/" + baseServiceName + "/**")
 					.filters(ServiceRouter::getDefaultGatewayFilterSpec)
 					.uri("lb://" + serviceName)
 			);
