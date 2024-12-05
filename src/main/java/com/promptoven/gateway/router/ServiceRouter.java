@@ -116,23 +116,23 @@ public class ServiceRouter {
 			String serviceId = serviceName.toLowerCase();
 			String baseServiceName = serviceId.replace("-service", "");
 
-			// Admin routes for this service
+			// Admin routes for this service - matches /v{n}/admin/...
 			routes = routes.route(baseServiceName + "-admin-routes",
-				r -> r.path("/v1/admin/" + baseServiceName + "/**")
+				r -> r.path("/v**/admin/" + baseServiceName + "/**")
 					.filters(f -> getDefaultGatewayFilterSpec(applyAuthFilters(f, adminRoles)))
 					.uri("lb://" + serviceName)
 			);
 
-			// Seller routes for this service
+			// Seller routes for this service - matches /v{n}/seller/...
 			routes = routes.route(baseServiceName + "-seller-routes",
-				r -> r.path("/v1/seller/" + baseServiceName + "/**")
+				r -> r.path("/v**/seller/" + baseServiceName + "/**")
 					.filters(f -> getDefaultGatewayFilterSpec(applyAuthFilters(f, sellerRoles)))
 					.uri("lb://" + serviceName)
 			);
 
-			// Member routes for this service
+			// Member routes for this service - matches /v{n}/member/...
 			routes = routes.route(baseServiceName + "-member-routes",
-				r -> r.path("/v1/member/" + baseServiceName + "/**")
+				r -> r.path("/v**/member/" + baseServiceName + "/**")
 					.filters(f -> getDefaultGatewayFilterSpec(applyAuthFilters(f, memberRoles)))
 					.uri("lb://" + serviceName)
 			);
