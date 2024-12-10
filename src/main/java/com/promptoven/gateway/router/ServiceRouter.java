@@ -184,10 +184,15 @@ public class ServiceRouter {
 			.addObject()
 			.putArray("JWT");
 		//add the security scheme to the swagger doc
-		JsonNode components = node.get("components");
-		if (null == components){
+		try{
+			JsonNode components = node.get("components");
+			JsonNode securitySchemes = components.get("securitySchemes");
+		} catch (RuntimeException e) {
 			((ObjectNode) node).put("components","");
+			JsonNode components = node.get("components");
+			((ObjectNode)components).putObject("securitySchemes");
 		}
+		JsonNode components = node.get("components");
 		JsonNode securitySchemes = components.get("securitySchemes");
 		if (null != securitySchemes) {
 			((ObjectNode)components).remove("securitySchemes");
