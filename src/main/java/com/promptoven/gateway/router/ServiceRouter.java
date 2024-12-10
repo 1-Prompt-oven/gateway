@@ -185,23 +185,19 @@ public class ServiceRouter {
 			.putArray("JWT");
 		//add the security scheme to the swagger doc
 		JsonNode components = node.get("components");
-		if (components == null || components.get("securitySchemes") == null) {
-			// Create components and securitySchemes if they don't exist
+		if (components == null) {
+			// Create components if it doesn't exist
 			components = ((ObjectNode) node).putObject("components");
-			((ObjectNode) components).putObject("securitySchemes");
-		}
+		} 
 
-		JsonNode securitySchemes = components.get("securitySchemes");
-		if (securitySchemes != null) {
-			((ObjectNode)components).remove("securitySchemes");
-		}
-		((ObjectNode)components).putObject("securitySchemes");
-		securitySchemes = components.get("securitySchemes");
-		((ObjectNode)securitySchemes).putObject("JWT")
+		// Always override securitySchemes
+		((ObjectNode) components).putObject("securitySchemes")
+			.putObject("JWT")
 			.put("type", "http")
 			.put("name", "JWT")
 			.put("scheme", "bearer")
 			.put("bearerFormat", "JWT");
+
 		//return the updated swagger doc
 		return node.toPrettyString();
 	}
